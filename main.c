@@ -11,6 +11,9 @@
 #include <stdbool.h>
 
 #include "camera.h"
+#include "math_utils.h"
+#include "objet.h"
+#include "sdl_utils.h"
 
 int main (void) {
 
