@@ -1,6 +1,7 @@
 FLAGS = -Wall -Wextra -fsanitize=address,undefined -g
 MATHLIB = -lm
-SDLLIB = `sdl2-config --cflags --libs`
+SDLLIB = -lSDL2
+TTFLIB = -lSDL2_ttf
 SRC = $(wildcard ./sources/*.c)
 OBJ = $(SRC:sources/%.c=build/%.o)
 
@@ -10,7 +11,7 @@ OBJ = $(SRC:sources/%.c=build/%.o)
 
 main.exe : $(OBJ)
 	mkdir -p build
-	gcc $(FLAGS) $(MATHLIB) $(SDLLIB) -o ./build/main.exe $^
+	gcc $(FLAGS) $(MATHLIB) $(SDLLIB) $(TTFLIB) -o ./build/main.exe $^
 
 clean : 
 	rm -rfv ./build
