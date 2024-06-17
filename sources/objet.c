@@ -10,7 +10,7 @@ objet_t* load_obj_file(char* filename) {
     int nb_triangle = 0;
     int nb_vt = 0;
     int nb_vn = 0;
-    char* c = malloc(sizeof(char)*20);
+    char* c = malloc(sizeof(char)*200);
     while (fscanf(file, "%s", c) != EOF) {
         if (strcmp(c, "v") == 0) nb_sommet++;
         else if (strcmp(c, "f") == 0) nb_triangle++;

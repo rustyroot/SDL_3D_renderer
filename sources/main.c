@@ -194,29 +194,29 @@ int main (void) {
                             camera.roll += camera.sensitivity;
                             break;
                         
-                        // case SDLK_LEFT :
-                        //     camera.x -= camera.speed;
-                        //     break;
+                        case SDLK_LEFT :
+                            camera.position.x -= 0.3;
+                            break;
 
-                        // case SDLK_RIGHT :
-                        //     camera.x += camera.speed;
-                        //     break;
+                        case SDLK_RIGHT :
+                            camera.position.x += 0.3;
+                            break;
 
-                        // case SDLK_DOWN :
-                        //     camera.y -= camera.speed;
-                        //     break;
+                        case SDLK_DOWN :
+                            camera.position.y -= 0.3;
+                            break;
 
-                        // case SDLK_UP :
-                        //     camera.y += camera.speed;
-                        //     break;
+                        case SDLK_UP :
+                            camera.position.y += 0.3;
+                            break;
                         
-                        // case SDLK_PAGEUP :
-                        //     camera.z += camera.speed;
-                        //     break;
+                        case SDLK_PAGEUP :
+                            camera.position.z += 0.3;
+                            break;
 
-                        // case SDLK_PAGEDOWN :
-                        //     camera.z -= camera.speed;
-                        //     break;
+                        case SDLK_PAGEDOWN :
+                            camera.position.z -= 0.3;
+                            break;
                     }
                     break;
 
