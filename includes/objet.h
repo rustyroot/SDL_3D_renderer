@@ -4,6 +4,11 @@
 
 #include "math_utils.h"
 
-triangle_t* load_obj_file(char* filename, int* nbt);
+typedef struct {
+    int size;
+    triangle_t** triangles;
+} objet_t;
+
+objet_t* load_obj_file(char* filename);
 
 #endif

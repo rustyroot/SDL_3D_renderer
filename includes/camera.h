@@ -3,6 +3,7 @@
 
 #include <SDL2/SDL.h>
 #include "math_utils.h"
+#include "objet.h"
 
 typedef struct { // 3D object reduce to a point which have for natural pointing toward Oy in Oxyz
     float x;

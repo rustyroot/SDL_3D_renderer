@@ -10,6 +10,7 @@
 #include <SDL2/SDL_video.h>
 #include <SDL2/SDL_ttf.h>
 #include <math.h>
+#include <stdlib.h>
 
 #include "../includes/camera.h"
 #include "../includes/math_utils.h"
@@ -56,13 +57,19 @@ int main (void) {
     SDL_Color magenta = {255,0,255,255};
     SDL_Color cyan = {0,255,255,255};
 
-    int nbt;
-    triangle_t* tt = load_obj_file("objects/suzanne.obj", &nbt);
+    int nb_obj = 3;
+
+    objet_t** objects = (objet_t**) malloc(sizeof(objet_t*)*nb_obj);
+
+    objects[0] = (objet_t*) malloc(sizeof(objet_t));
+    objects[0]->size = 4;
+    objects[0]->triangles = malloc(sizeof(triangle_t*)*objects[0]->size);
+    for (int i=0; i<4; i++) objects[0]->triangles[i] = init_triangle(points[i*3], points[i*3+1], points[i*3+2], (i<2)?red:green);
 
     int nombre_case_damier = 51;
-    int nombre_triangle = 4+nombre_case_damier*nombre_case_damier*2 + nbt;
-    triangle_t** triangles = malloc(sizeof(triangle_t*)*nombre_triangle);
-    for (int i=0; i<4; i++) triangles[i] = init_triangle(points[i*3], points[i*3+1], points[i*3+2], (i<2)?red:green);
+    objects[1] = (objet_t*) malloc(sizeof(objet_t));
+    objects[1]->size = nombre_case_damier*nombre_case_damier*2;
+    objects[1]->triangles = malloc(sizeof(triangle_t*)*objects[1]->size);
     float si = 1.5;
     int px = -nombre_case_damier*si/2;
     int py = -nombre_case_damier*si/2;
@@ -73,40 +80,49 @@ int main (void) {
         point_t p1 = {px + x*si, py + y*si, pz};
         point_t p2 = {px + (x+1)*si, py + (y+1)*si, pz};
         point_t p3 = {px + (x+1)*si, py + y*si, pz};
-        triangles[4+i*2] = init_triangle(p1, p2, p3, (i%2 == 0)?magenta:cyan);
+        objects[1]->triangles[i*2] = init_triangle(p1, p2, p3, (i%2 == 0)?magenta:cyan);
         p3.x = px + x*si;
         p3.y = py + (y+1)*si;
-        triangles[4+i*2+1] = init_triangle(p1, p2, p3, (i%2 == 0)?magenta:cyan);
+        objects[1]->triangles[i*2+1] = init_triangle(p1, p2, p3, (i%2 == 0)?magenta:cyan);
     }
+
+    objects[2] = load_obj_file("objects/suzanne.obj");
 
     point_t decalage = {3,0,0};
     point_t r1 = {1, 0, 0};
     point_t r2 = {0, 0, -1};
     point_t r3 = {0, 1, 0};
-    for (int i=0; i<nbt; i++) {
+    for (int i=0; i<objects[2]->size; i++) {
         point_t p1 = {
-            r1.x*tt[i].p1.x + r1.y*tt[i].p1.y + r1.z*tt[i].p1.z + decalage.x,
-            r2.x*tt[i].p1.x + r2.y*tt[i].p1.y + r2.z*tt[i].p1.z + decalage.y,
-            r3.x*tt[i].p1.x + r3.y*tt[i].p1.y + r3.z*tt[i].p1.z + decalage.z,
+            r1.x*objects[2]->triangles[i]->p1.x + r1.y*objects[2]->triangles[i]->p1.y + r1.z*objects[2]->triangles[i]->p1.z + decalage.x,
+            r2.x*objects[2]->triangles[i]->p1.x + r2.y*objects[2]->triangles[i]->p1.y + r2.z*objects[2]->triangles[i]->p1.z + decalage.y,
+            r3.x*objects[2]->triangles[i]->p1.x + r3.y*objects[2]->triangles[i]->p1.y + r3.z*objects[2]->triangles[i]->p1.z + decalage.z,
         };
         point_t p2 = {
-            r1.x*tt[i].p2.x + r1.y*tt[i].p2.y + r1.z*tt[i].p2.z + decalage.x,
-            r2.x*tt[i].p2.x + r2.y*tt[i].p2.y + r2.z*tt[i].p2.z + decalage.y,
-            r3.x*tt[i].p2.x + r3.y*tt[i].p2.y + r3.z*tt[i].p2.z + decalage.z,
+            r1.x*objects[2]->triangles[i]->p2.x + r1.y*objects[2]->triangles[i]->p2.y + r1.z*objects[2]->triangles[i]->p2.z + decalage.x,
+            r2.x*objects[2]->triangles[i]->p2.x + r2.y*objects[2]->triangles[i]->p2.y + r2.z*objects[2]->triangles[i]->p2.z + decalage.y,
+            r3.x*objects[2]->triangles[i]->p2.x + r3.y*objects[2]->triangles[i]->p2.y + r3.z*objects[2]->triangles[i]->p2.z + decalage.z,
         };
         point_t p3 = {
-            r1.x*tt[i].p3.x + r1.y*tt[i].p3.y + r1.z*tt[i].p3.z + decalage.x,
-            r2.x*tt[i].p3.x + r2.y*tt[i].p3.y + r2.z*tt[i].p3.z + decalage.y,
-            r3.x*tt[i].p3.x + r3.y*tt[i].p3.y + r3.z*tt[i].p3.z + decalage.z,
+            r1.x*objects[2]->triangles[i]->p3.x + r1.y*objects[2]->triangles[i]->p3.y + r1.z*objects[2]->triangles[i]->p3.z + decalage.x,
+            r2.x*objects[2]->triangles[i]->p3.x + r2.y*objects[2]->triangles[i]->p3.y + r2.z*objects[2]->triangles[i]->p3.z + decalage.y,
+            r3.x*objects[2]->triangles[i]->p3.x + r3.y*objects[2]->triangles[i]->p3.y + r3.z*objects[2]->triangles[i]->p3.z + decalage.z,
         };
 
-        triangle_t* tr = malloc(sizeof(triangle_t));
-        tr->p1 = p1;
-        tr->p2 = p2;
-        tr->p3 = p3;
-        tr->color = tt[i].color;
+        objects[2]->triangles[i]->p1 = p1;
+        objects[2]->triangles[i]->p2 = p2;
+        objects[2]->triangles[i]->p3 = p3;
+    }
 
-        triangles[nombre_triangle-nbt+i] = tr;
+    int nombre_triangle = 0;
+    for (int i=0; i<nb_obj; i++) nombre_triangle += objects[i]->size;
+    triangle_t** triangles = malloc(sizeof(triangle_t*)*nombre_triangle);
+    int k = 0;
+    for (int i=0; i<nb_obj; i++) {
+        for (int j=0; j<objects[i]->size; j++) {
+            triangles[k] = objects[i]->triangles[j];
+            k++;
+        }
     }
 
     TTF_Init();
@@ -250,9 +266,16 @@ int main (void) {
 
     }
 
+    free(timetext);
+
     free(time_elapsed);
     for (int i=0; i<nombre_triangle; i++) free(triangles[i]);
     free(triangles);
+    for (int i=0; i<nb_obj; i++) {
+        free(objects[i]->triangles);
+        free(objects[i]);
+    }
+    free(objects);
 
     TTF_CloseFont(liberation);
     SDL_DestroyRenderer(renderer);

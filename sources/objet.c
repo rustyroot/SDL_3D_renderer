@@ -1,7 +1,7 @@
 
 #include "../includes/objet.h"
 
-triangle_t* load_obj_file(char* filename, int* nbt) {
+objet_t* load_obj_file(char* filename) {
     FILE* file = fopen(filename, "r");
     if (file == NULL) {
         printf("Pas de fichier %s\n", filename);
@@ -21,7 +21,7 @@ triangle_t* load_obj_file(char* filename, int* nbt) {
     fclose(file);
     file = fopen(filename, "r");
     point_t* points = (point_t*) malloc(sizeof(point_t)*nb_sommet);
-    triangle_t* triangles = (triangle_t*) malloc(sizeof(triangle_t)*nb_triangle);
+    triangle_t** triangles = (triangle_t**) malloc(sizeof(triangle_t*)*nb_triangle);
     char* c1 = malloc(sizeof(char)*200);
     int is = 0;
     int it = 0;
@@ -39,13 +39,14 @@ triangle_t* load_obj_file(char* filename, int* nbt) {
             int v2, vt2, vn2;
             int v3, vt3, vn3;
             fscanf(file, "%d/%d/%d %d/%d/%d %d/%d/%d", &v1, &vt1, &vn1, &v2, &vt2, &vn2, &v3, &vt3, &vn3);
-            triangles[it].color.a = 255;
-            triangles[it].color.r = rand()%255;
-            triangles[it].color.g = rand()%255;
-            triangles[it].color.b = rand()%255;
-            triangles[it].p1 = points[v1-1];
-            triangles[it].p2 = points[v2-1];
-            triangles[it].p3 = points[v3-1];
+            triangles[it] = malloc(sizeof(triangle_t));
+            triangles[it]->color.a = 255;
+            triangles[it]->color.r = rand()%255;
+            triangles[it]->color.g = rand()%255;
+            triangles[it]->color.b = rand()%255;
+            triangles[it]->p1 = points[v1-1];
+            triangles[it]->p2 = points[v2-1];
+            triangles[it]->p3 = points[v3-1];
             it++;
         } else {
             fscanf(file, "%[^\n]", c1);
@@ -54,6 +55,8 @@ triangle_t* load_obj_file(char* filename, int* nbt) {
     fclose(file);
     free(points);
     free(c1);
-    *nbt = nb_triangle;
-    return triangles;
+    objet_t* obj = (objet_t*) malloc(sizeof(objet_t));
+    obj->size = nb_triangle;
+    obj->triangles = triangles;
+    return obj;
 }
