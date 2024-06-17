@@ -13,7 +13,7 @@ SDL_bool get_angles (camera_t* C, point_t* O, float* theta, float* phi) {
     point_t CP_2 = {sin(-C->yaw) * cos(C->pitch), cos(C->pitch) * cos(C->yaw), sin(C->pitch)};
     point_t CP_3 = produit_vectoriel(CP_1, CP_2);
     
-    point_t CO = {O->x - C->x, O->y - C->y, O->z - C->z};
+    point_t CO = {O->x - C->position.x, O->y - C->position.y, O->z - C->position.z};
 
     point_t CO_base_camera = {
         CP_1.x*CO.x + CP_1.y*CO.y + CP_1.z*CO.z,
@@ -73,19 +73,19 @@ void sort(camera_t* camera, triangle_t** triangles, int size) {
 }
 
 float distance(triangle_t* t, camera_t* camera) {
-    float dx = t->p1.x - camera->x;
-    float dy = t->p1.y - camera->y;
-    float dz = t->p1.z - camera->z;
+    float dx = t->p1.x - camera->position.x;
+    float dy = t->p1.y - camera->position.y;
+    float dz = t->p1.z - camera->position.z;
     float dp1 = sqrt(dx*dx + dy*dy + dz*dz);
 
-    dx = t->p2.x - camera->x;
-    dy = t->p2.y - camera->y;
-    dz = t->p2.z - camera->z;
+    dx = t->p2.x - camera->position.x;
+    dy = t->p2.y - camera->position.y;
+    dz = t->p2.z - camera->position.z;
     float dp2 = sqrt(dx*dx + dy*dy + dz*dz);
 
-    dx = t->p3.x - camera->x;
-    dy = t->p3.y - camera->y;
-    dz = t->p3.z - camera->z;
+    dx = t->p3.x - camera->position.x;
+    dy = t->p3.y - camera->position.y;
+    dz = t->p3.z - camera->position.z;
     float dp3 = sqrt(dx*dx + dy*dy + dz*dz);
     return (dp1+dp2+dp3)/3;
 }

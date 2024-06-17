@@ -6,9 +6,7 @@
 #include "objet.h"
 
 typedef struct { // 3D object reduce to a point which have for natural pointing toward Oy in Oxyz
-    float x;
-    float y;
-    float z;
+    point_t position;
     float yaw; // rotation à l'horizon pour invariant <--> radian
     float pitch; // rotation à la verticale pour invariant /\ \/ radian
     float roll; // rotation radian

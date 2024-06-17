@@ -41,7 +41,7 @@ int main (void) {
 
     float camera_keyboard_sensitivity = 0.1;
     float camera_sensitivity = to_radians(10.0/60);
-    camera_t camera = {0, -10, 0, 0, 0, 0, {0,0,0}, {0,0,0}, camera_keyboard_sensitivity, camera_sensitivity};
+    camera_t camera = {{0, -10, 0}, 0, 0, 0, {0,0,0}, {0,0,0}, camera_keyboard_sensitivity, camera_sensitivity};
     point_t points[12] = {
         {-1, -1, -1}, {1, -1, -1}, {1, -1, 1},
         {-1, -1, -1}, {1, -1, 1}, {-1, -1, 1},
@@ -236,15 +236,8 @@ int main (void) {
             
         }
 
-        camera.speed.x += camera.acceleration.x;
-        camera.speed.y += camera.acceleration.y;
-        camera.speed.z += camera.acceleration.z;
-        camera.speed.x *= 0.9;
-        camera.speed.y *= 0.9;
-        camera.speed.z *= 0.9;
-        camera.x += camera.speed.x;
-        camera.y += camera.speed.y;
-        camera.z += camera.speed.z;
+        camera.speed = produit_par_scalaire(0.9, somme_point(camera.speed, camera.acceleration));
+        camera.position = somme_point(camera.position, camera.speed);
 
         camera.acceleration.x = 0;
         camera.acceleration.y = 0;
