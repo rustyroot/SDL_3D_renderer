@@ -4,8 +4,8 @@
 void angles_to_screen_coordinates (float theta, float phi, float fov_horizontal, float fov_vertical, SDL_Window* window, float* x, float* y) {
     int w, h;
     SDL_GetWindowSize(window, &w, &h);
-    *x = (2 * theta / fov_horizontal) * w + 0.5*w;
-    *y = -(2 * phi / fov_vertical) * h + 0.5*h;
+    *x = (theta / fov_horizontal) * w + 0.5*w;
+    *y = -(phi / fov_vertical) * h + 0.5*h;
 }
 
 SDL_bool get_angles (camera_t* C, point_t* O, float* theta, float* phi) {

@@ -11,7 +11,9 @@ typedef struct { // 3D object reduce to a point which have for natural pointing 
     float yaw; // rotation à l'horizon pour invariant <--> radian
     float pitch; // rotation à la verticale pour invariant /\ \/ radian
     float roll; // rotation radian
-    float speed;
+    point_t speed;
+    point_t acceleration;
+    float keyboard_sensitivity;
     float sensitivity;
 } camera_t;
 
