@@ -115,20 +115,24 @@ int main (void) {
     Message_rect.x = 0;  //controls the rect's x coordinate 
     Message_rect.y = 0; // controls the rect's y coordinte
 
-    char* timetext = malloc(sizeof(char) * 30);
-    Uint64 time_prev, time_next, average_time_elapsed;
+    char* timetext = malloc(sizeof(char) * 100);
+    int time_prev, time_next;
+    float average_time_elapsed = 4;
     int nb_frames_average = 30;
-    Uint64* time_elapsed = malloc(sizeof(Uint64) * nb_frames_average);
+    int* time_elapsed = calloc(nb_frames_average, sizeof(int));
+    for (int i=0; i<nb_frames_average; i++) time_elapsed[i] = 4;
     int index_frame = 0;
     time_prev = SDL_GetTicks64();
 
     while (is_running) {
-
         time_next = SDL_GetTicks64();
-        time_elapsed[index_frame%nb_frames_average] = time_prev - time_next;
-        index_frame++;
+        int new_time_elapsed = (int) time_next - time_prev;
+        average_time_elapsed = (average_time_elapsed * nb_frames_average + new_time_elapsed - time_elapsed[index_frame])/nb_frames_average;
+        time_elapsed[index_frame] = new_time_elapsed;
+        index_frame = (index_frame+1)%nb_frames_average;
+        time_prev = time_next;
         
-        sprintf(timetext, "time  = %ld ms\n", SDL_GetTicks64());
+        sprintf(timetext, "Average_time_elapsed  = %f fps\n", 1000/average_time_elapsed);
         SDL_Surface* surfaceMessage = TTF_RenderText_Solid(liberation, timetext, White);
         SDL_Texture* Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
         TTF_SizeText(liberation, timetext, &Message_rect.w, &Message_rect.h);
