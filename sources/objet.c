@@ -1,5 +1,5 @@
 
-#include "objet.h"
+#include "../includes/objet.h"
 
 triangle_t* load_obj_file(char* filename, int* nbt) {
     FILE* file = fopen(filename, "r");

@@ -20,6 +20,5 @@ double to_radians(double degrees);
 point_t produit_vectoriel(point_t p1, point_t p2);
 float dot(point_t p1, point_t p2);
 triangle_t* init_triangle(point_t p1, point_t p2, point_t p3, SDL_Color c);
-float distance(triangle_t* t, camera_t* camera);
 
 #endif

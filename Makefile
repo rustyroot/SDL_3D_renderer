@@ -1,5 +1,19 @@
-cmp :
-	gcc -o main main.c -lm `sdl2-config --cflags --libs`
+FLAGS = -Wall -Wextra -fsanitize=address,undefined -g
+MATHLIB = -lm
+SDLLIB = `sdl2-config --cflags --libs`
+SRC = $(wildcard ./sources/*.c)
+OBJ = $(SRC:sources/%.c=build/%.o)
 
-safe :
-	gcc -Wall -Wextra -fsanitize=address,undefined -o main main.c -lm `sdl2-config --cflags --libs` -g%
+%.o : %.c
+	mkdir -p build
+	gcc $(FLAGS) $(MATHLIB) $(SDLLIB) -c -o $@ $<
+
+main.exe : $(OBJ)
+	mkdir -p build
+	gcc $(FLAGS) $(MATHLIB) $(SDLLIB) -o ./build/main.exe $^
+
+clean : 
+	rm -rfv ./build
+
+run :
+	./build/main.exe

@@ -7,17 +7,17 @@
 #include <SDL2/SDL_stdinc.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_video.h>
+#include <SDL2/SDL_ttf.h>
 #include <math.h>
-#include <stdbool.h>
 
-#include "camera.h"
-#include "math_utils.h"
-#include "objet.h"
-#include "sdl_utils.h"
+#include "../includes/camera.h"
+#include "../includes/math_utils.h"
+#include "../includes/objet.h"
 
 int main (void) {
 
     SDL_Init(SDL_INIT_EVERYTHING);
+    TTF_Init();
 
     SDL_Window* window;
     SDL_Renderer* renderer;
@@ -38,7 +38,7 @@ int main (void) {
 
     SDL_SetRelativeMouseMode(SDL_TRUE);
 
-    float camera_speed = 0.1;
+    float camera_speed = 0.3;
     float camera_sensitivity = to_radians(10.0/60);
     camera_t camera = {0, -10, 0, 0, 0, 0, camera_speed, camera_sensitivity};
     point_t points[12] = {
@@ -56,13 +56,13 @@ int main (void) {
     SDL_Color c6 = {0,255,255,255};
 
     int nbt;
-    triangle_t* tt = load_obj_file("suzanne.obj", &nbt);
+    triangle_t* tt = load_obj_file("objects/suzanne.obj", &nbt);
 
     int nombre_case_damier = 51;
     int nombre_triangle = 4+nombre_case_damier*nombre_case_damier*2 + nbt;
     triangle_t** triangles = malloc(sizeof(triangle_t*)*nombre_triangle);
     for (int i=0; i<4; i++) triangles[i] = init_triangle(points[i*3], points[i*3+1], points[i*3+2], (i<2)?c1:c2);
-    int si = 1.5;
+    float si = 1.5;
     int px = -nombre_case_damier*si/2;
     int py = -nombre_case_damier*si/2;
     int pz = -2;
@@ -110,7 +110,7 @@ int main (void) {
 
     while (is_running) {
 
-        // printf("time  = %ld ms\n", SDL_GetTicks64());
+        printf("time  = %ld ms\n", SDL_GetTicks64());
         // printf("position camera : x:%f, y:%f, z:%f, yaw:%f, pitch:%f, roll:%f\n", camera.x, camera.y, camera.z, camera.yaw, camera.pitch, camera.roll);
 
         while(SDL_PollEvent(&event)) {
@@ -208,11 +208,13 @@ int main (void) {
 
     }
 
+    printf("FREE\n");
     for (int i=0; i<nombre_triangle; i++) free(triangles[i]);
     free(triangles);
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+    TTF_Quit();
     SDL_Quit();
 
     return 0;
