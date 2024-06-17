@@ -5,6 +5,7 @@
 #include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_stdinc.h>
+#include <SDL2/SDL_surface.h>
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_video.h>
 #include <SDL2/SDL_ttf.h>
@@ -110,17 +111,27 @@ int main (void) {
     TTF_Init();
     TTF_Font* liberation = TTF_OpenFont("fonts/liberation-fonts-ttf-2.1.5/LiberationSerif-Regular.ttf", 24);
     SDL_Color White = {255, 255, 255};
-    SDL_Surface* surfaceMessage = TTF_RenderText_Solid(liberation, "put your text here", White);
-    SDL_Texture* Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
     SDL_Rect Message_rect; //create a rect
     Message_rect.x = 0;  //controls the rect's x coordinate 
     Message_rect.y = 0; // controls the rect's y coordinte
-    Message_rect.w = 100; // controls the width of the rect
-    Message_rect.h = 100; // controls the height of the rect
+
+    char* timetext = malloc(sizeof(char) * 30);
+    Uint64 time_prev, time_next, average_time_elapsed;
+    int nb_frames_average = 30;
+    Uint64* time_elapsed = malloc(sizeof(Uint64) * nb_frames_average);
+    int index_frame = 0;
+    time_prev = SDL_GetTicks64();
 
     while (is_running) {
 
-        printf("time  = %ld ms\n", SDL_GetTicks64());
+        time_next = SDL_GetTicks64();
+        time_elapsed[index_frame] = time_prev - time_next;
+        index_frame++;
+        sprintf(timetext, "time  = %ld ms\n", SDL_GetTicks64());
+        SDL_Surface* surfaceMessage = TTF_RenderText_Solid(liberation, timetext, White);
+        SDL_Texture* Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
+        TTF_SizeText(liberation, timetext, &Message_rect.w, &Message_rect.h);
+        
         // printf("position camera : x:%f, y:%f, z:%f, yaw:%f, pitch:%f, roll:%f\n", camera.x, camera.y, camera.z, camera.yaw, camera.pitch, camera.roll);
 
         while(SDL_PollEvent(&event)) {
@@ -215,13 +226,17 @@ int main (void) {
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
         SDL_RenderPresent(renderer);
+        SDL_FreeSurface(surfaceMessage);
+        SDL_DestroyTexture(Message);
 
     }
 
     printf("FREE\n");
+    free(time_elapsed);
     for (int i=0; i<nombre_triangle; i++) free(triangles[i]);
     free(triangles);
 
+    TTF_CloseFont(liberation);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     TTF_Quit();
