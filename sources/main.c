@@ -125,8 +125,9 @@ int main (void) {
     while (is_running) {
 
         time_next = SDL_GetTicks64();
-        time_elapsed[index_frame] = time_prev - time_next;
+        time_elapsed[index_frame%nb_frames_average] = time_prev - time_next;
         index_frame++;
+        
         sprintf(timetext, "time  = %ld ms\n", SDL_GetTicks64());
         SDL_Surface* surfaceMessage = TTF_RenderText_Solid(liberation, timetext, White);
         SDL_Texture* Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
