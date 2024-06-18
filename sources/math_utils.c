@@ -1,5 +1,6 @@
 
 #include "../includes/math_utils.h"
+#include <SDL2/SDL_stdinc.h>
 
 double to_degrees(double radians) {
     return radians * (180.0 / M_PI);
@@ -35,4 +36,41 @@ point_t somme_point(point_t p1, point_t p2) {
 point_t produit_par_scalaire(float x, point_t p) {
     point_t s = {x*p.x, x*p.y, x*p.z};
     return s;
+}
+
+list_t* add_list(list_t* l, int v) {
+    list_t* nl = (list_t*) malloc(sizeof(list_t));
+    nl->val = v;
+    nl->next = l;
+    return nl;
+}
+
+SDL_bool list_mem(list_t* l, int v) {
+    while (l != NULL) {
+        if (l->val == v) return SDL_TRUE;
+        l = l->next;
+    }
+    return SDL_FALSE;
+}
+
+list_t* remove_list(list_t* l, int v) {
+    if (l == NULL) return l;
+    else if (l->val == v) {
+        list_t* ln = l->next;
+        free(l);
+        return remove_list(ln, v);
+    } else {
+        list_t* ln = remove_list(l->next, v);
+        l->next = ln;
+        return l;
+    }
+}
+
+int list_size(list_t* l) {
+    int n = 0;
+    while (l != NULL) {
+        n++;
+        l = l->next;
+    }
+    return n;
 }
