@@ -246,6 +246,16 @@ int main (void) {
 
         SDL_RenderClear(renderer);
 
+        float periode = 5; // s
+        float amplitude = 0.03; // space unit
+        // mouvement de la forme A*cos(wt) + x0
+        // donc vitesse de la forme -A*w*sin(wt)
+        float omega = 2 * M_PI * 1/periode;
+        float speed_amplitude = -amplitude*omega;
+        float t = (float)time_next/1000; // temps courant en seconde
+        point_t suzanne_speed = {speed_amplitude * SDL_sinf(omega * t), 0, 0};
+        move_obj(objects[2], &suzanne_speed);
+
         sort(&camera, triangles, nombre_triangle);
         for (int i=0; i<nombre_triangle; i++) {
             draw_triangle(&camera, &(triangles[i]->p1), &(triangles[i]->p2), &(triangles[i]->p3), triangles[i]->color, triangles[i]->color, triangles[i]->color, fov_horizontal, fov_vertical, window, renderer);

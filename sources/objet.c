@@ -1,5 +1,6 @@
 
 #include "../includes/objet.h"
+#include "../includes/math_utils.h"
 
 objet_t* load_obj_file(char* filename) {
     FILE* file = fopen(filename, "r");
@@ -59,4 +60,12 @@ objet_t* load_obj_file(char* filename) {
     obj->size = nb_triangle;
     obj->triangles = triangles;
     return obj;
+}
+
+void move_obj(objet_t* objet, point_t* vecteur) {
+    for (int k = 0; k < objet->size; k++) {
+        objet->triangles[k]->p1 = somme_point(objet->triangles[k]->p1, *vecteur);
+        objet->triangles[k]->p2 = somme_point(objet->triangles[k]->p2, *vecteur);
+        objet->triangles[k]->p3 = somme_point(objet->triangles[k]->p3, *vecteur);
+    }
 }
