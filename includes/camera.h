@@ -21,6 +21,6 @@ SDL_bool get_angles (camera_t* C, point_t* O, float* theta, float* phi);
 void rotate(float* x1, float* y1, float angle, SDL_Window* window);
 void draw_triangle(camera_t* camera, point_t* point1, point_t* point2, point_t* point3, SDL_Color c1, SDL_Color c2, SDL_Color c3, float fov_horizontal, float fov_vertical, SDL_Window* window, SDL_Renderer* renderer);
 void sort(camera_t* camera, triangle_t** triangles, int size);
-float distance(triangle_t* t, camera_t* camera);
+float average_sqared_distance(triangle_t* t, camera_t* camera);
 
 #endif

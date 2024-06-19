@@ -61,31 +61,39 @@ void draw_triangle(camera_t* camera, point_t* point1, point_t* point2, point_t* 
 }
 
 void sort(camera_t* camera, triangle_t** triangles, int size) {
+    float* distances = malloc(sizeof(float)*size);
+    for (int k = 0; k < size; k++) {
+        distances[k] = average_sqared_distance(triangles[k], camera);
+    }
     for (int i=1; i<size; i++) {
         int j = i;
-        while (j>0 && distance(triangles[j], camera) > distance(triangles[j-1], camera)) {
+        while (j>0 && distances[j] > distances[j-1]) {
             triangle_t* tmp = triangles[j-1];
             triangles[j-1] = triangles[j];
             triangles[j] = tmp;
+            float distance_tmp = distances[j-1];
+            distances[j-1] = distances[j];
+            distances[j] = distance_tmp;
             j--;
         }
     }
+    free(distances);
 }
 
-float distance(triangle_t* t, camera_t* camera) {
+float average_sqared_distance(triangle_t* t, camera_t* camera) {
     float dx = t->p1.x - camera->position.x;
     float dy = t->p1.y - camera->position.y;
     float dz = t->p1.z - camera->position.z;
-    float dp1 = sqrt(dx*dx + dy*dy + dz*dz);
+    float dp1 = dx*dx + dy*dy + dz*dz;
 
     dx = t->p2.x - camera->position.x;
     dy = t->p2.y - camera->position.y;
     dz = t->p2.z - camera->position.z;
-    float dp2 = sqrt(dx*dx + dy*dy + dz*dz);
+    float dp2 = dx*dx + dy*dy + dz*dz;
 
     dx = t->p3.x - camera->position.x;
     dy = t->p3.y - camera->position.y;
     dz = t->p3.z - camera->position.z;
-    float dp3 = sqrt(dx*dx + dy*dy + dz*dz);
+    float dp3 = dx*dx + dy*dy + dz*dz;
     return (dp1+dp2+dp3)/3;
 }
