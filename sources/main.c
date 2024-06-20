@@ -66,7 +66,7 @@ int main (void) {
     objects[0]->triangles = malloc(sizeof(triangle_t*)*objects[0]->size);
     for (int i=0; i<4; i++) objects[0]->triangles[i] = init_triangle(points[i*3], points[i*3+1], points[i*3+2], (i<2)?red:green);
 
-    int nombre_case_damier = 51;
+    int nombre_case_damier = 21;
     objects[1] = (objet_t*) malloc(sizeof(objet_t));
     objects[1]->size = nombre_case_damier*nombre_case_damier*2;
     objects[1]->triangles = malloc(sizeof(triangle_t*)*objects[1]->size);
@@ -86,12 +86,15 @@ int main (void) {
         objects[1]->triangles[i*2+1] = init_triangle(p1, p2, p3, (i%2 == 0)?magenta:cyan);
     }
 
-    objects[2] = load_obj_file("objects/suzanne.obj");
+
+    // dragon_model.obj 26000 faces
+    // dragon_model2.obj 2000 faces
+    objects[2] = load_obj_file("objects/dragon_model.obj");
 
     point_t decalage = {3,0,0};
-    point_t r1 = {1, 0, 0};
-    point_t r2 = {0, 0, -1};
-    point_t r3 = {0, 1, 0};
+    point_t r1 = {3, 0, 0};
+    point_t r2 = {0, 0, -3};
+    point_t r3 = {0, 3, 0};
     for (int i=0; i<objects[2]->size; i++) {
         point_t p1 = {
             r1.x*objects[2]->triangles[i]->p1.x + r1.y*objects[2]->triangles[i]->p1.y + r1.z*objects[2]->triangles[i]->p1.z + decalage.x,
@@ -143,8 +146,6 @@ int main (void) {
     list_t* keyDown = NULL;
 
     while (is_running) {
-
-        printf("s : %d\n", list_size(keyDown));
 
         time_next = SDL_GetTicks64();
         int new_time_elapsed = (int) time_next - time_prev;
@@ -260,6 +261,9 @@ int main (void) {
             if (kd != NULL) kd = kd->next;
         }
 
+        camera.acceleration.x *= new_time_elapsed * 0.05;
+        camera.acceleration.y *= new_time_elapsed * 0.05;
+        camera.acceleration.z *= new_time_elapsed * 0.05;
         camera.speed = produit_par_scalaire(0.9, somme_point(camera.speed, camera.acceleration));
         camera.position = somme_point(camera.position, camera.speed);
 
