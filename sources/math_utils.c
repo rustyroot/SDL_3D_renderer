@@ -38,39 +38,13 @@ point_t produit_par_scalaire(float x, point_t p) {
     return s;
 }
 
-list_t* add_list(list_t* l, int v) {
-    list_t* nl = (list_t*) malloc(sizeof(list_t));
-    nl->val = v;
-    nl->next = l;
-    return nl;
+float distance(point_t point1, point_t point2) {
+    float dx = point1.x - point2.x;
+    float dy = point1.y - point2.y;
+    float dz = point1.z - point2.z;
+    return SDL_sqrtf(dx*dx + dy*dy + dz*dz);
 }
 
-SDL_bool list_mem(list_t* l, int v) {
-    while (l != NULL) {
-        if (l->val == v) return SDL_TRUE;
-        l = l->next;
-    }
-    return SDL_FALSE;
-}
-
-list_t* remove_list(list_t* l, int v) {
-    if (l == NULL) return l;
-    else if (l->val == v) {
-        list_t* ln = l->next;
-        free(l);
-        return remove_list(ln, v);
-    } else {
-        list_t* ln = remove_list(l->next, v);
-        l->next = ln;
-        return l;
-    }
-}
-
-int list_size(list_t* l) {
-    int n = 0;
-    while (l != NULL) {
-        n++;
-        l = l->next;
-    }
-    return n;
+float norm (point_t vector) {
+    return SDL_sqrtf(vector.x*vector.x + vector.y*vector.y + vector.z*vector.z);
 }

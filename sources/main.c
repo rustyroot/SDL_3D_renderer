@@ -14,7 +14,9 @@
 
 #include "../includes/camera.h"
 #include "../includes/math_utils.h"
-#include "../includes/objet.h"
+#include "../includes/object.h"
+#include "../includes/list.h"
+#include "../includes/sdl_utils.h"
 
 int main (void) {
 
@@ -27,9 +29,7 @@ int main (void) {
     int screen_width = mode.w;
     int screen_height = mode.h;
     float ratio = 0.7;
-    float fov = 90;
-    float fov_vertical = to_radians(fov*screen_height/screen_width); // 130
-    float fov_horizontal = to_radians(fov); // 180
+    float fov = to_radians(60);
 
     SDL_CreateWindowAndRenderer((int)(ratio * screen_width), (int)(ratio * screen_height), SDL_WINDOW_SHOWN, &window, &renderer);
     SDL_SetWindowPosition(window, (screen_width - (int)(ratio * screen_width))/2, (screen_height - (int)(ratio * screen_height))/2);
@@ -39,9 +39,10 @@ int main (void) {
 
     SDL_SetRelativeMouseMode(SDL_TRUE);
 
-    float camera_keyboard_sensitivity = 0.1;
-    float camera_sensitivity = to_radians(10.0/60);
-    camera_t camera = {{0, -10, 0}, 0, 0, 0, {0,0,0}, {0,0,0}, camera_keyboard_sensitivity, camera_sensitivity};
+    float camera_keyboard_sensitivity = 100;
+    float camera_mouse_sensitivity = to_radians(10.0/60);
+    camera_t* camera = create_camera((point_t){0, -10, 0}, camera_keyboard_sensitivity, camera_mouse_sensitivity, fov);
+
     point_t points[12] = {
         {-1, -1, -1}, {1, -1, -1}, {1, -1, 1},
         {-1, -1, -1}, {1, -1, 1}, {-1, -1, 1},
@@ -89,7 +90,8 @@ int main (void) {
 
     // dragon_model.obj 26000 faces
     // dragon_model2.obj 2000 faces
-    objects[2] = load_obj_file("objects/dragon_model.obj");
+    // objects[2] = load_obj_file("objects/dragon_model.obj");
+    objects[2] = load_obj_file("objects/suzanne.obj");
 
     point_t decalage = {3,0,0};
     point_t r1 = {3, 0, 0};
@@ -159,113 +161,9 @@ int main (void) {
         SDL_Texture* Message = SDL_CreateTextureFromSurface(renderer, surfaceMessage);
         TTF_SizeText(liberation, timetext, &Message_rect.w, &Message_rect.h);
 
-        while (SDL_PollEvent(&event)) {
-            switch (event.type) {
-                case SDL_KEYDOWN :
-                    switch (event.key.keysym.sym) {
-                        case SDLK_ESCAPE :
-                            is_running = SDL_FALSE;
-                            break;
-                        default:
-                            if (!list_mem(keyDown, event.key.keysym.sym)) keyDown = add_list(keyDown, event.key.keysym.sym);
-                            break;
-                    }
-                    break;
-                case SDL_KEYUP :
-                    keyDown = remove_list(keyDown, event.key.keysym.sym);
-                    break;
-                case SDL_MOUSEWHEEL : 
-                    camera.roll -= camera.sensitivity * event.wheel.preciseY * 3;
-                    break;
-
-                case SDL_MOUSEMOTION :
-                    camera.yaw -= camera.sensitivity * (event.motion.xrel * cos(camera.roll) - event.motion.yrel * sin(camera.roll));
-                    camera.pitch -= camera.sensitivity * (event.motion.xrel * sin(camera.roll) + event.motion.yrel * cos(camera.roll));
-                    break;
-
-                case SDL_QUIT:
-                    is_running = SDL_FALSE;
-                    break;
-            }
-        }
-
-        
-        list_t* kd = keyDown;
-
-        camera.acceleration.x = 0;
-        camera.acceleration.y = 0;
-        camera.acceleration.z = 0;
-
-        while(kd != NULL) {
-            switch (kd->val) {
-                case SDLK_ESCAPE :
-                    is_running = SDL_FALSE;
-                    break;
-
-                case SDLK_z :
-                    camera.acceleration.x += camera.keyboard_sensitivity * sin(-camera.yaw) * cos(camera.pitch);
-                    camera.acceleration.y += camera.keyboard_sensitivity * cos(camera.pitch) * cos(camera.yaw);
-                    camera.acceleration.z += camera.keyboard_sensitivity * sin(camera.pitch);
-                    break;
-
-                case SDLK_q :
-                    camera.acceleration.x += -camera.keyboard_sensitivity * cos(camera.yaw) * cos(camera.roll);
-                    camera.acceleration.y += -camera.keyboard_sensitivity * sin(camera.yaw) * cos(camera.roll);
-                    camera.acceleration.z += -camera.keyboard_sensitivity * sin(-camera.roll); 
-                    break;
-
-                case SDLK_s :
-                    camera.acceleration.x += -camera.keyboard_sensitivity * sin(-camera.yaw) * cos(camera.pitch);
-                    camera.acceleration.y += -camera.keyboard_sensitivity * cos(camera.pitch) * cos(camera.yaw);
-                    camera.acceleration.z += -camera.keyboard_sensitivity * sin(camera.pitch);
-                    break;
-
-                case SDLK_d :
-                    camera.acceleration.x += camera.keyboard_sensitivity * cos(camera.yaw) * cos(camera.roll);
-                    camera.acceleration.y += camera.keyboard_sensitivity * sin(camera.yaw) * cos(camera.roll);
-                    camera.acceleration.z += camera.keyboard_sensitivity * sin(-camera.roll); 
-                    break;
-
-                case SDLK_e :
-                    camera.roll -= camera.sensitivity;
-                    break;
-
-                case SDLK_r :
-                    camera.roll += camera.sensitivity;
-                    break;
-                
-                case SDLK_LEFT :
-                    camera.position.x -= 0.3;
-                    break;
-
-                case SDLK_RIGHT :
-                    camera.position.x += 0.3;
-                    break;
-
-                case SDLK_DOWN :
-                    camera.position.y -= 0.3;
-                    break;
-
-                case SDLK_UP :
-                    camera.position.y += 0.3;
-                    break;
-                
-                case SDLK_PAGEUP :
-                    camera.position.z += 0.3;
-                    break;
-
-                case SDLK_PAGEDOWN :
-                    camera.position.z -= 0.3;
-                    break;
-            }
-            if (kd != NULL) kd = kd->next;
-        }
-
-        camera.acceleration.x *= new_time_elapsed * 0.05;
-        camera.acceleration.y *= new_time_elapsed * 0.05;
-        camera.acceleration.z *= new_time_elapsed * 0.05;
-        camera.speed = produit_par_scalaire(0.9, somme_point(camera.speed, camera.acceleration));
-        camera.position = somme_point(camera.position, camera.speed);
+        float mouse_events[3] = {0, 0, 0};
+        poll_event(&event, &keyDown, &is_running, mouse_events);
+        update_camera(camera, keyDown, mouse_events);
 
         SDL_RenderClear(renderer);
 
@@ -279,9 +177,9 @@ int main (void) {
         point_t suzanne_speed = {speed_amplitude * SDL_sinf(omega * t), 0, 0};
         move_obj(objects[2], &suzanne_speed);
 
-        sort(&camera, triangles, nombre_triangle);
+        sort(camera, triangles, nombre_triangle);
         for (int i=0; i<nombre_triangle; i++) {
-            draw_triangle(&camera, &(triangles[i]->p1), &(triangles[i]->p2), &(triangles[i]->p3), triangles[i]->color, triangles[i]->color, triangles[i]->color, fov_horizontal, fov_vertical, window, renderer);
+            draw_triangle(camera, &(triangles[i]->p1), &(triangles[i]->p2), &(triangles[i]->p3), triangles[i]->color, triangles[i]->color, triangles[i]->color, window, renderer);
         }
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -303,6 +201,7 @@ int main (void) {
     }
     free(objects);
 
+    destroy_camera(camera);
     TTF_CloseFont(liberation);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);

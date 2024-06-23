@@ -1,6 +1,6 @@
 
-#ifndef OBJET_H
-#define OBJET_H
+#ifndef OBJECT_H
+#define OBJECT_H
 
 #include "math_utils.h"
 

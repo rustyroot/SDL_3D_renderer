@@ -1,5 +1,5 @@
 
-#include "../includes/objet.h"
+#include "../includes/object.h"
 #include "../includes/math_utils.h"
 
 objet_t* load_obj_file(char* filename) {
