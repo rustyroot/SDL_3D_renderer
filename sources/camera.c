@@ -56,15 +56,15 @@ void rotate(float* x1, float* y1, float angle, SDL_Window* window) {
     *y1 = -x1_non_centrer*sin(angle) + y1_non_centrer*cos(angle) + (float)h/2;
 }
 
-void draw_triangle(camera_t* camera, point_t* point1, point_t* point2, point_t* point3, SDL_Color c1, SDL_Color c2, SDL_Color c3, SDL_Window* window, SDL_Renderer* renderer) {
+void draw_triangle(camera_t* camera, triangle_t* triangle, SDL_Color c1, SDL_Color c2, SDL_Color c3, SDL_Window* window, SDL_Renderer* renderer) {
     float theta, phi;
     float x1, y1, x2, y2, x3, y3;
 
-    SDL_bool t1 = get_angles(camera, point1, &theta, &phi);
+    SDL_bool t1 = get_angles(camera, &triangle->p1, &theta, &phi);
     angles_to_screen_coordinates(theta, phi, camera->fov, window, &x1, &y1);
-    SDL_bool t2 = get_angles(camera, point2, &theta, &phi);
+    SDL_bool t2 = get_angles(camera, &triangle->p2, &theta, &phi);
     angles_to_screen_coordinates(theta, phi, camera->fov, window, &x2, &y2);
-    SDL_bool t3 = get_angles(camera, point3, &theta, &phi);
+    SDL_bool t3 = get_angles(camera, &triangle->p3, &theta, &phi);
     angles_to_screen_coordinates(theta, phi, camera->fov, window, &x3, &y3);
 
     rotate(&x1, &y1, camera->roll, window);
@@ -74,6 +74,21 @@ void draw_triangle(camera_t* camera, point_t* point1, point_t* point2, point_t* 
     SDL_Vertex s1 = {{x1, y1}, c1, {1, 1}};
     SDL_Vertex s2 = {{x2, y2}, c2, {1, 1}};
     SDL_Vertex s3 = {{x3, y3}, c3, {1, 1}};
+
+    int w, h;
+    SDL_GetWindowSize(window, &w, &h);
+    float px = (float)w/2;
+    float py = (float)h/2;
+    float areaTriangle = abs_float((x2-x1)*(y3-y1) - (x3-x1)*(y2-y1));
+    float area1 = abs_float((x1-px)*(y2-py) - (x2-px)*(y1-py));
+    float area2 = abs_float((x2-px)*(y3-py) - (x3-px)*(y2-py));
+    float area3 = abs_float((x3-px)*(y1-py) - (x1-px)*(y3-py));
+    float sum = area1+area2+area3;
+
+    if (sum > areaTriangle-0.1 && sum < areaTriangle+0.1) {
+        camera->triangle_pointer = triangle;
+    }
+
     SDL_Vertex sommets[3] = {s1, s2, s3};
 
     if (t1 && t2 && t3) SDL_RenderGeometry(renderer, NULL, sommets, 3, NULL, 0);

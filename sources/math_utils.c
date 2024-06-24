@@ -33,6 +33,11 @@ point_t somme_point(point_t p1, point_t p2) {
     return s;
 }
 
+point_t soustraction_point(point_t p1, point_t p2) {
+    point_t s = {p1.x - p2.x, p1.y-p2.y, p1.z-p2.z};
+    return s;
+}
+
 point_t produit_par_scalaire(float x, point_t p) {
     point_t s = {x*p.x, x*p.y, x*p.z};
     return s;
@@ -47,4 +52,9 @@ float distance(point_t point1, point_t point2) {
 
 float norm (point_t vector) {
     return SDL_sqrtf(vector.x*vector.x + vector.y*vector.y + vector.z*vector.z);
+}
+
+float abs_float(float a) {
+    if (a>0) return -a;
+    else return a;
 }

@@ -1,6 +1,7 @@
 
 #include "../includes/object.h"
 #include "../includes/math_utils.h"
+#include <stdlib.h>
 
 objet_t* load_obj_file(char* filename) {
     FILE* file = fopen(filename, "r");
@@ -68,4 +69,26 @@ void move_obj(objet_t* objet, point_t* vecteur) {
         objet->triangles[k]->p2 = somme_point(objet->triangles[k]->p2, *vecteur);
         objet->triangles[k]->p3 = somme_point(objet->triangles[k]->p3, *vecteur);
     }
+}
+
+objet_t* copy_obj(objet_t* objet) {
+    objet_t* obj = (objet_t*) malloc(sizeof(objet_t));
+    obj->size = objet->size;
+    obj->triangles = (triangle_t**) malloc(sizeof(triangle_t*)*obj->size);
+    for (int i=0; i<obj->size; i++) {
+        obj->triangles[i] = (triangle_t*) malloc(sizeof(triangle_t));
+        obj->triangles[i]->color = objet->triangles[i]->color;
+        obj->triangles[i]->p1 = objet->triangles[i]->p1;
+        obj->triangles[i]->p2 = objet->triangles[i]->p2;
+        obj->triangles[i]->p3 = objet->triangles[i]->p3;
+    }
+    return obj;
+}
+
+void free_obj(objet_t* objet) {
+    for (int i=0; i<objet->size; i++) {
+        free(objet->triangles[i]);
+    }
+    free(objet->triangles);
+    free(objet);
 }

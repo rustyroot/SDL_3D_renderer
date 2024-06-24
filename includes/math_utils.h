@@ -21,8 +21,10 @@ point_t produit_vectoriel(point_t p1, point_t p2);
 float dot(point_t p1, point_t p2);
 triangle_t* init_triangle(point_t p1, point_t p2, point_t p3, SDL_Color c);
 point_t somme_point(point_t p1, point_t p2);
+point_t soustraction_point(point_t p1, point_t p2);
 point_t produit_par_scalaire(float x, point_t p);
 float distance(point_t point1, point_t point2);
 float norm(point_t vector);
+float abs_float(float a);
 
 #endif
