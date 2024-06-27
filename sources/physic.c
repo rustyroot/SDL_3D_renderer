@@ -1,4 +1,5 @@
 #include "../includes/physic.h"
+#include <SDL2/SDL_stdinc.h>
 #include <SDL2/SDL_timer.h>
 
 const float gravitational_constant = 6.67430 * 0.000000000001;
@@ -11,6 +12,7 @@ physical_point_t* create_physical_point (point_t *position, float charge, float 
     point->charge = charge;
     point->mass = mass;
     point->time = SDL_GetTicks64();
+    point->fixe = SDL_FALSE;
     return point;
 }
 

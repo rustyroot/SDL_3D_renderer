@@ -61,22 +61,31 @@ objet_t* load_obj_file(char* filename) {
     }
     fclose(file);
 
-    int nb_springs = nb_sommet*(nb_sommet-1)/2;
+    int nb_springs = 0;
+    for (int i=0; i<nb_sommet; i++) {
+        for (int j=i+1; j<nb_sommet; j++) {
+            if (distance(*points[i]->position, *points[j]->position) < 0.5) nb_springs++;
+        }
+    }
+
+    //int nb_springs = nb_sommet*(nb_sommet-1)/2;
     spring_t** springs = (spring_t**) malloc(sizeof(spring_t*)*nb_springs);
     int** spring_indice = (int**) malloc(sizeof(int*)*nb_springs);
     int spring_i = 0;
     for (int i=0; i<nb_sommet; i++) {
         for (int j=i+1; j<nb_sommet; j++) {
-            spring_indice[spring_i] = malloc(sizeof(int)*2);
-            spring_indice[spring_i][0] = i;
-            spring_indice[spring_i][1] = j;
+            if (distance(*points[i]->position, *points[j]->position) < 0.5) {
+                spring_indice[spring_i] = malloc(sizeof(int)*2);
+                spring_indice[spring_i][0] = i;
+                spring_indice[spring_i][1] = j;
 
-            springs[spring_i] = malloc(sizeof(spring_t));
-            springs[spring_i]->k = 1;
-            springs[spring_i]->p1 = points[spring_indice[spring_i][0]];
-            springs[spring_i]->p2 = points[spring_indice[spring_i][1]];
-            springs[spring_i]->size = distance(*springs[spring_i]->p1->position, *springs[spring_i]->p2->position);
-            spring_i++;
+                springs[spring_i] = malloc(sizeof(spring_t));
+                springs[spring_i]->k = 1;
+                springs[spring_i]->p1 = points[spring_indice[spring_i][0]];
+                springs[spring_i]->p2 = points[spring_indice[spring_i][1]];
+                springs[spring_i]->size = distance(*springs[spring_i]->p1->position, *springs[spring_i]->p2->position);
+                spring_i++;
+            }
         }
     }
 
@@ -101,22 +110,33 @@ void compute_spring(objet_t* obj, float k) {
     free(obj->spring_indice);
     free(obj->springs);
 
-    int nb_springs = obj->nb_sommets*(obj->nb_sommets-1)/2;
+    float seuil = 20.5;
+
+    int nb_springs = 0;
+    for (int i=0; i<obj->nb_sommets; i++) {
+        for (int j=i+1; j<obj->nb_sommets; j++) {
+            if (distance(*obj->sommets[i]->position, *obj->sommets[j]->position) < seuil) nb_springs++;
+        }
+    }
+
+    //int nb_springs = obj->nb_sommets*(obj->nb_sommets-1)/2;
     spring_t** springs = (spring_t**) malloc(sizeof(spring_t*)*nb_springs);
     int** spring_indice = (int**) malloc(sizeof(int*)*nb_springs);
     int spring_i = 0;
     for (int i=0; i<obj->nb_sommets; i++) {
         for (int j=i+1; j<obj->nb_sommets; j++) {
-            spring_indice[spring_i] = malloc(sizeof(int)*2);
-            spring_indice[spring_i][0] = i;
-            spring_indice[spring_i][1] = j;
+            if (distance(*obj->sommets[i]->position, *obj->sommets[j]->position) < seuil) {
+                spring_indice[spring_i] = malloc(sizeof(int)*2);
+                spring_indice[spring_i][0] = i;
+                spring_indice[spring_i][1] = j;
 
-            springs[spring_i] = malloc(sizeof(spring_t));
-            springs[spring_i]->k = k;
-            springs[spring_i]->p1 = obj->sommets[spring_indice[spring_i][0]];
-            springs[spring_i]->p2 = obj->sommets[spring_indice[spring_i][1]];
-            springs[spring_i]->size = distance(*springs[spring_i]->p1->position, *springs[spring_i]->p2->position);
-            spring_i++;
+                springs[spring_i] = malloc(sizeof(spring_t));
+                springs[spring_i]->k = k;///distance(*obj->sommets[i]->position, *obj->sommets[j]->position);
+                springs[spring_i]->p1 = obj->sommets[spring_indice[spring_i][0]];
+                springs[spring_i]->p2 = obj->sommets[spring_indice[spring_i][1]];
+                springs[spring_i]->size = distance(*springs[spring_i]->p1->position, *springs[spring_i]->p2->position);
+                spring_i++;
+            }
         }
     }
     obj->nb_springs = nb_springs;
@@ -126,11 +146,6 @@ void compute_spring(objet_t* obj, float k) {
 
 void move_obj(objet_t* objet, point_t* vecteur) {
     for (int i=0; i<objet->nb_sommets; i++) copy_point(somme_point(*objet->sommets[i]->position, *vecteur), objet->sommets[i]->position);
-    // for (int k = 0; k < objet->nb_triangles; k++) {
-    //     copy_point(somme_point(*objet->triangles[k]->p1, *vecteur), objet->triangles[k]->p1);
-    //     copy_point(somme_point(*objet->triangles[k]->p2, *vecteur), objet->triangles[k]->p2);
-    //     copy_point(somme_point(*objet->triangles[k]->p3, *vecteur), objet->triangles[k]->p3);
-    // }
 }
 
 objet_t* copy_obj(objet_t* objet) {

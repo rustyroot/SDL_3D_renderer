@@ -41,7 +41,7 @@ int main (void) {
     SDL_SetRelativeMouseMode(SDL_TRUE);
 
     float camera_keyboard_sensitivity = 100;
-    float camera_mouse_sensitivity = to_radians(10.0/60);
+    float camera_mouse_sensitivity = to_radians(780.0/60);
     camera_t* camera = create_camera(malloc_point((point_t){0, -10, 0}), camera_keyboard_sensitivity, camera_mouse_sensitivity, fov);
 
     // point_t points[12] = {
@@ -134,7 +134,8 @@ int main (void) {
         };
         copy_point(p, objects[1]->sommets[i]->position);
     }
-    compute_spring(objects[1], 0.005);
+    compute_spring(objects[1], 4);
+    printf("nb_sommet : %d, nb_springs : %d\n", objects[1]->nb_sommets, objects[1]->nb_springs);
 
     int nombre_triangle = 0;
     for (int i=0; i<nb_obj; i++) nombre_triangle += objects[i]->nb_triangles;
@@ -167,6 +168,7 @@ int main (void) {
     list_t* keyDown = NULL;
 
     SDL_bool simul = SDL_FALSE;
+    SDL_bool simul2 = SDL_FALSE;
 
     while (is_running) {
 
@@ -196,12 +198,13 @@ int main (void) {
         if (simul) {
             // force de graviter
             for (int i=0; i<objects[1]->nb_sommets; i++) {
-                copy_point((point_t){0, 0, -0.002}, objects[1]->sommets[i]->acceleration);
+                copy_point((point_t){0, sin(camera->roll), -1*cos(camera->roll)}, objects[1]->sommets[i]->acceleration);
             }
 
             // force des ressorts
             for (int i=0; i<objects[1]->nb_springs; i++) {
                 float delta_l = distance(*objects[1]->springs[i]->p1->position, *objects[1]->springs[i]->p2->position) - objects[1]->springs[i]->size;
+                delta_l = (delta_l>1)?1:delta_l;
                 point_t dir = soustraction_point(*objects[1]->springs[i]->p2->position, *objects[1]->springs[i]->p1->position);
                 // printf("init : %f\n", abs_float(norm(dir)));
                 if (abs_float(norm(dir)) > 0.1) {
@@ -212,11 +215,22 @@ int main (void) {
                 }
             }
 
+            if (!simul2) {
+                simul2 = SDL_TRUE;
+                for (int i=0; i<objects[1]->nb_sommets; i++) {
+                    copy_point((point_t){0,0,0}, objects[1]->sommets[i]->acceleration);
+                    copy_point((point_t){0,0,0}, objects[1]->sommets[i]->speed);
+                }
+            }
+
             // update speed / position
             for (int i=0; i<objects[1]->nb_sommets; i++) {
                 float time_since_last_update = (float)(time_next - objects[1]->sommets[i]->time)/1000; // s
-                time_since_last_update = 1;
                 objects[1]->sommets[i]->time = time_next;
+
+                float coefficient_frottement = -0.2;
+                copy_point(somme_point(produit_par_scalaire(coefficient_frottement, *objects[1]->sommets[i]->speed), *objects[1]->sommets[i]->acceleration), objects[1]->sommets[i]->acceleration);
+
                 copy_point(somme_point(*objects[1]->sommets[i]->speed, produit_par_scalaire(time_since_last_update, *objects[1]->sommets[i]->acceleration)), objects[1]->sommets[i]->speed);
                 copy_point(somme_point(*objects[1]->sommets[i]->position, produit_par_scalaire(time_since_last_update, *objects[1]->sommets[i]->speed)), objects[1]->sommets[i]->position);
             }
@@ -356,11 +370,8 @@ int main (void) {
     free(timetext);
 
     free(time_elapsed);
-    // for (int i=0; i<nombre_triangle; i++) free(triangles[i]);
     free(triangles);
     for (int i=0; i<nb_obj; i++) {
-        // free(objects[i]->triangles);
-        // free(objects[i]);
         free_obj(objects[i]);
     }
     free(objects);

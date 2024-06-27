@@ -11,6 +11,7 @@ typedef struct {
     Uint64 time;
     float charge;
     float mass;
+    SDL_bool fixe;
 } physical_point_t;
 
 typedef struct {

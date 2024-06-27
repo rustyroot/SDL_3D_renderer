@@ -201,16 +201,20 @@ void update_camera(camera_t* camera, list_t* keyDown, float* mouse_events) {
         }
         if (keyDown != NULL) keyDown = keyDown->next;
     }
-    camera->roll -= camera->mouse_sensitivity * mouse_events[0] * 3;
-    camera->yaw -= camera->mouse_sensitivity * (mouse_events[1] * cos(camera->roll) - mouse_events[2] * sin(camera->roll));
-    camera->pitch -= camera->mouse_sensitivity * (mouse_events[1] * sin(camera->roll) + mouse_events[2] * cos(camera->roll));
 
     Uint64 t = SDL_GetTicks64();
 
     float time_elapsed = (float)(t - camera->point->time)/1000;
 
+    camera->roll -= camera->mouse_sensitivity * mouse_events[0] * 3 * time_elapsed;
+    camera->yaw -= camera->mouse_sensitivity * (mouse_events[1] * cos(camera->roll) - mouse_events[2] * sin(camera->roll)) * time_elapsed;
+    camera->pitch -= camera->mouse_sensitivity * (mouse_events[1] * sin(camera->roll) + mouse_events[2] * cos(camera->roll)) * time_elapsed;
+
+    float coefficient_frottement = -8;
+    copy_point(somme_point(produit_par_scalaire(coefficient_frottement, *camera->point->speed), *camera->point->acceleration), camera->point->acceleration);
+
+    copy_point(somme_point(*camera->point->speed, produit_par_scalaire(time_elapsed, *camera->point->acceleration)), camera->point->speed);
     copy_point(somme_point(*camera->point->position, produit_par_scalaire(time_elapsed, *camera->point->speed)), camera->point->position);
-    copy_point(produit_par_scalaire(0.99, somme_point(*camera->point->speed, produit_par_scalaire(time_elapsed, *camera->point->acceleration))), camera->point->speed);
     copy_point(produit_par_scalaire(0, *camera->point->acceleration), camera->point->acceleration);
 
     camera->point->time = t;
