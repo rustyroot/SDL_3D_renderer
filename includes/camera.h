@@ -19,7 +19,7 @@ typedef struct { // 3D object reduce to a point which have for natural pointing 
     triangle_t* triangle_pointer;
 } camera_t;
 
-camera_t* create_camera (point_t position, float keyboard_sensitivity, float mouse_sensitivity, float fov);
+camera_t* create_camera (point_t* position, float keyboard_sensitivity, float mouse_sensitivity, float fov);
 void destroy_camera (camera_t* camera);
 void angles_to_screen_coordinates (float theta, float phi, float fov, SDL_Window* window, float* x, float* y);
 SDL_bool get_angles (camera_t* C, point_t* O, float* theta, float* phi);

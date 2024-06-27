@@ -22,9 +22,9 @@ float dot(point_t p1, point_t p2) {
 triangle_t* init_triangle(point_t p1, point_t p2, point_t p3, SDL_Color c) {
     triangle_t* t = malloc(sizeof(triangle_t));
     t->color = c;
-    t->p1 = p1;
-    t->p2 = p2;
-    t->p3 = p3;
+    t->p1 = malloc_point(p1);
+    t->p2 = malloc_point(p2);
+    t->p3 = malloc_point(p3);
     return t;
 }
 
@@ -55,6 +55,20 @@ float norm (point_t vector) {
 }
 
 float abs_float(float a) {
-    if (a>0) return -a;
-    else return a;
+    if (a>0) return a;
+    else return -a;
+}
+
+point_t* malloc_point(point_t p) {
+    point_t* mp = malloc(sizeof(point_t));
+    mp->x = p.x;
+    mp->y = p.y;
+    mp->z = p.z;
+    return mp;
+}
+
+void copy_point(point_t src, point_t* dst) {
+    dst->x = src.x;
+    dst->y = src.y;
+    dst->z = src.z;
 }

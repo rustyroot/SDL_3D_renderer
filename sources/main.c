@@ -10,7 +10,6 @@
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_video.h>
 #include <SDL2/SDL_ttf.h>
-#include <math.h>
 #include <stdlib.h>
 
 #include "../includes/camera.h"
@@ -34,6 +33,7 @@ int main (void) {
 
     SDL_CreateWindowAndRenderer((int)(ratio * screen_width), (int)(ratio * screen_height), SDL_WINDOW_SHOWN, &window, &renderer);
     SDL_SetWindowPosition(window, (screen_width - (int)(ratio * screen_width))/2, (screen_height - (int)(ratio * screen_height))/2);
+    SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
 
     SDL_bool is_running = SDL_TRUE;
     SDL_Event event;
@@ -42,90 +42,106 @@ int main (void) {
 
     float camera_keyboard_sensitivity = 100;
     float camera_mouse_sensitivity = to_radians(10.0/60);
-    camera_t* camera = create_camera((point_t){0, -10, 0}, camera_keyboard_sensitivity, camera_mouse_sensitivity, fov);
+    camera_t* camera = create_camera(malloc_point((point_t){0, -10, 0}), camera_keyboard_sensitivity, camera_mouse_sensitivity, fov);
 
-    point_t points[12] = {
-        {-1, -1, -1}, {1, -1, -1}, {1, -1, 1},
-        {-1, -1, -1}, {1, -1, 1}, {-1, -1, 1},
-        {1, -1, 1}, {1, -1, -1}, {1, 1, -1},
-        {1, -1, 1}, {1, 1, -1}, {1, 1, 1},
-    };
+    // point_t points[12] = {
+    //     {-1, -1, -1}, {1, -1, -1}, {1, -1, 1},
+    //     {-1, -1, -1}, {1, -1, 1}, {-1, -1, 1},
+    //     {1, -1, 1}, {1, -1, -1}, {1, 1, -1},
+    //     {1, -1, 1}, {1, 1, -1}, {1, 1, 1},
+    // };
 
     SDL_Color white = {255, 255, 255, 255};
-    SDL_Color red = {255,0,0,255};
-    SDL_Color green = {0,255,0,255};
+    // SDL_Color red = {255,0,0,255};
+    // SDL_Color green = {0,255,0,255};
     // SDL_Color blue = {0,0,255,255};
     // SDL_Color Jaune = {255,255,0,255};
     SDL_Color magenta = {255,0,255,255};
     SDL_Color cyan = {0,255,255,255};
 
-    int nb_obj = 3;
+    int nb_obj = 2;
 
     objet_t** objects = (objet_t**) malloc(sizeof(objet_t*)*nb_obj);
 
-    objects[0] = (objet_t*) malloc(sizeof(objet_t));
-    objects[0]->size = 4;
-    objects[0]->triangles = malloc(sizeof(triangle_t*)*objects[0]->size);
-    for (int i=0; i<objects[0]->size; i++) objects[0]->triangles[i] = init_triangle(points[i*3], points[i*3+1], points[i*3+2], (i<2)?red:green);
+    // objects[0] = (objet_t*) malloc(sizeof(objet_t));
+    // objects[0]->nb_triangles = 4;
+    // objects[0]->triangles = malloc(sizeof(triangle_t*)*objects[0]->nb_triangles);
+    // for (int i=0; i<objects[0]->nb_triangles; i++) objects[0]->triangles[i] = init_triangle(points[i*3], points[i*3+1], points[i*3+2], (i<2)?red:green);
+    // objects[0]->nb_springs = 0;
+    // objects[0]->springs = NULL;
 
     int nombre_case_damier = 21;
-    objects[1] = (objet_t*) malloc(sizeof(objet_t));
-    objects[1]->size = nombre_case_damier*nombre_case_damier*2;
-    objects[1]->triangles = malloc(sizeof(triangle_t*)*objects[1]->size);
+    objects[0] = (objet_t*) malloc(sizeof(objet_t));
+    objects[0]->nb_sommets = (nombre_case_damier+1)*(nombre_case_damier+1);
+    objects[0]->nb_triangles = nombre_case_damier*nombre_case_damier*2;
+    objects[0]->sommets = malloc(sizeof(point_t*)*objects[0]->nb_sommets);
+    objects[0]->triangles_indice = malloc(sizeof(int*)*objects[0]->nb_triangles);
+    objects[0]->triangles = malloc(sizeof(triangle_t*)*objects[0]->nb_triangles);
     float si = 1.5;
     int px = -nombre_case_damier*si/2;
     int py = -nombre_case_damier*si/2;
     int pz = -2;
+    for (int i=0; i<nombre_case_damier+1; i++) {
+        for (int j=0; j<nombre_case_damier+1; j++) {
+            objects[0]->sommets[i*(nombre_case_damier+1)+j] = create_physical_point(malloc_point((point_t){px + i*si, py+j*si, pz}), 0, 1);
+        }
+    }
     for (int i=0; i<nombre_case_damier*nombre_case_damier; i++) {
         int x = i/nombre_case_damier;
         int y = i%nombre_case_damier;
-        point_t p1 = {px + x*si, py + y*si, pz};
-        point_t p2 = {px + (x+1)*si, py + (y+1)*si, pz};
-        point_t p3 = {px + (x+1)*si, py + y*si, pz};
-        objects[1]->triangles[i*2] = init_triangle(p1, p2, p3, (i%2 == 0)?magenta:cyan);
-        p3.x = px + x*si;
-        p3.y = py + (y+1)*si;
-        objects[1]->triangles[i*2+1] = init_triangle(p1, p2, p3, (i%2 == 0)?magenta:cyan);
+
+        objects[0]->triangles_indice[i*2] = malloc(sizeof(int)*3);
+        objects[0]->triangles_indice[i*2][0] = x*(nombre_case_damier+1)+y;
+        objects[0]->triangles_indice[i*2][1] = x*(nombre_case_damier+1)+(y+1);
+        objects[0]->triangles_indice[i*2][2] = (x+1)*(nombre_case_damier+1)+y;
+        objects[0]->triangles_indice[i*2+1] = malloc(sizeof(int)*3);
+        objects[0]->triangles_indice[i*2+1][0] = x*(nombre_case_damier+1)+(y+1);
+        objects[0]->triangles_indice[i*2+1][1] = (x+1)*(nombre_case_damier+1)+y;
+        objects[0]->triangles_indice[i*2+1][2] = (x+1)*(nombre_case_damier+1)+(y+1);
+
+        objects[0]->triangles[i*2] = malloc(sizeof(triangle_t));
+        objects[0]->triangles[i*2]->color = (i%2 == 0)?magenta:cyan;
+        objects[0]->triangles[i*2]->p1 = objects[0]->sommets[objects[0]->triangles_indice[i*2][0]]->position;
+        objects[0]->triangles[i*2]->p2 = objects[0]->sommets[objects[0]->triangles_indice[i*2][1]]->position;
+        objects[0]->triangles[i*2]->p3 = objects[0]->sommets[objects[0]->triangles_indice[i*2][2]]->position;
+
+        objects[0]->triangles[i*2+1] = malloc(sizeof(triangle_t));
+        objects[0]->triangles[i*2+1]->color = (i%2 == 0)?magenta:cyan;
+        objects[0]->triangles[i*2+1]->p1 = objects[0]->sommets[objects[0]->triangles_indice[i*2+1][0]]->position;
+        objects[0]->triangles[i*2+1]->p2 = objects[0]->sommets[objects[0]->triangles_indice[i*2+1][1]]->position;
+        objects[0]->triangles[i*2+1]->p3 = objects[0]->sommets[objects[0]->triangles_indice[i*2+1][2]]->position;
     }
+    objects[0]->nb_springs = 0;
+    objects[0]->springs = NULL;
 
 
     // dragon_model.obj 26000 faces
     // dragon_model2.obj 2000 faces
     // objects[2] = load_obj_file("objects/dragon_model.obj");
-    objects[2] = load_obj_file("objects/suzanne.obj");
+    objects[1] = load_obj_file("objects/suzanne.obj");
 
-    point_t decalage = {3,0,0};
-    point_t r1 = {3, 0, 0};
-    point_t r2 = {0, 0, -3};
-    point_t r3 = {0, 3, 0};
-    for (int i=0; i<objects[2]->size; i++) {
-        point_t p1 = {
-            r1.x*objects[2]->triangles[i]->p1.x + r1.y*objects[2]->triangles[i]->p1.y + r1.z*objects[2]->triangles[i]->p1.z + decalage.x,
-            r2.x*objects[2]->triangles[i]->p1.x + r2.y*objects[2]->triangles[i]->p1.y + r2.z*objects[2]->triangles[i]->p1.z + decalage.y,
-            r3.x*objects[2]->triangles[i]->p1.x + r3.y*objects[2]->triangles[i]->p1.y + r3.z*objects[2]->triangles[i]->p1.z + decalage.z,
+    point_t decalage = {3,0,1};
+    float scale = 2;
+    float theta = to_radians(10);
+    point_t r1 = {scale, 0, 0};
+    point_t r2 = {0, scale*cos(theta), -scale*sin(theta)};
+    point_t r3 = {0, scale*sin(theta), scale*cos(theta)};
+    for (int i=0; i<objects[1]->nb_sommets; i++) {
+        point_t p = {
+            r1.x*objects[1]->sommets[i]->position->x + r1.y*objects[1]->sommets[i]->position->y + r1.z*objects[1]->sommets[i]->position->z + decalage.x,
+            r2.x*objects[1]->sommets[i]->position->x + r2.y*objects[1]->sommets[i]->position->y + r2.z*objects[1]->sommets[i]->position->z + decalage.y,
+            r3.x*objects[1]->sommets[i]->position->x + r3.y*objects[1]->sommets[i]->position->y + r3.z*objects[1]->sommets[i]->position->z + decalage.z,
         };
-        point_t p2 = {
-            r1.x*objects[2]->triangles[i]->p2.x + r1.y*objects[2]->triangles[i]->p2.y + r1.z*objects[2]->triangles[i]->p2.z + decalage.x,
-            r2.x*objects[2]->triangles[i]->p2.x + r2.y*objects[2]->triangles[i]->p2.y + r2.z*objects[2]->triangles[i]->p2.z + decalage.y,
-            r3.x*objects[2]->triangles[i]->p2.x + r3.y*objects[2]->triangles[i]->p2.y + r3.z*objects[2]->triangles[i]->p2.z + decalage.z,
-        };
-        point_t p3 = {
-            r1.x*objects[2]->triangles[i]->p3.x + r1.y*objects[2]->triangles[i]->p3.y + r1.z*objects[2]->triangles[i]->p3.z + decalage.x,
-            r2.x*objects[2]->triangles[i]->p3.x + r2.y*objects[2]->triangles[i]->p3.y + r2.z*objects[2]->triangles[i]->p3.z + decalage.y,
-            r3.x*objects[2]->triangles[i]->p3.x + r3.y*objects[2]->triangles[i]->p3.y + r3.z*objects[2]->triangles[i]->p3.z + decalage.z,
-        };
-
-        objects[2]->triangles[i]->p1 = p1;
-        objects[2]->triangles[i]->p2 = p2;
-        objects[2]->triangles[i]->p3 = p3;
+        copy_point(p, objects[1]->sommets[i]->position);
     }
+    compute_spring(objects[1], 0.005);
 
     int nombre_triangle = 0;
-    for (int i=0; i<nb_obj; i++) nombre_triangle += objects[i]->size;
+    for (int i=0; i<nb_obj; i++) nombre_triangle += objects[i]->nb_triangles;
     triangle_t** triangles = malloc(sizeof(triangle_t*)*nombre_triangle);
     int k = 0;
     for (int i=0; i<nb_obj; i++) {
-        for (int j=0; j<objects[i]->size; j++) {
+        for (int j=0; j<objects[i]->nb_triangles; j++) {
             triangles[k] = objects[i]->triangles[j];
             k++;
         }
@@ -150,6 +166,8 @@ int main (void) {
 
     list_t* keyDown = NULL;
 
+    SDL_bool simul = SDL_FALSE;
+
     while (is_running) {
 
         time_next = SDL_GetTicks64();
@@ -168,16 +186,63 @@ int main (void) {
         poll_event(&event, &keyDown, &is_running, mouse_events);
         update_camera(camera, keyDown, mouse_events);
 
+
+
+        if (list_mem(keyDown, SDLK_g)) {
+                keyDown = remove_list(keyDown, SDLK_g);
+                if (simul) simul = SDL_FALSE;
+                else simul = SDL_TRUE;
+        }
+        if (simul) {
+            // force de graviter
+            for (int i=0; i<objects[1]->nb_sommets; i++) {
+                copy_point((point_t){0, 0, -0.002}, objects[1]->sommets[i]->acceleration);
+            }
+
+            // force des ressorts
+            for (int i=0; i<objects[1]->nb_springs; i++) {
+                float delta_l = distance(*objects[1]->springs[i]->p1->position, *objects[1]->springs[i]->p2->position) - objects[1]->springs[i]->size;
+                point_t dir = soustraction_point(*objects[1]->springs[i]->p2->position, *objects[1]->springs[i]->p1->position);
+                // printf("init : %f\n", abs_float(norm(dir)));
+                if (abs_float(norm(dir)) > 0.1) {
+                    dir = produit_par_scalaire(delta_l*objects[1]->springs[i]->k/norm(dir), dir);
+                    // printf("nd : %f\n", norm(dir));
+                    copy_point(somme_point(*objects[1]->springs[i]->p1->acceleration, dir), objects[1]->springs[i]->p1->acceleration);
+                    copy_point(soustraction_point(*objects[1]->springs[i]->p2->acceleration, dir), objects[1]->springs[i]->p2->acceleration);
+                }
+            }
+
+            // update speed / position
+            for (int i=0; i<objects[1]->nb_sommets; i++) {
+                float time_since_last_update = (float)(time_next - objects[1]->sommets[i]->time)/1000; // s
+                time_since_last_update = 1;
+                objects[1]->sommets[i]->time = time_next;
+                copy_point(somme_point(*objects[1]->sommets[i]->speed, produit_par_scalaire(time_since_last_update, *objects[1]->sommets[i]->acceleration)), objects[1]->sommets[i]->speed);
+                copy_point(somme_point(*objects[1]->sommets[i]->position, produit_par_scalaire(time_since_last_update, *objects[1]->sommets[i]->speed)), objects[1]->sommets[i]->position);
+            }
+
+            // collision avec le sol
+            for (int i=0; i<objects[1]->nb_sommets; i++) {
+                if (objects[1]->sommets[i]->position->z < objects[0]->sommets[0]->position->z) {
+                    objects[1]->sommets[i]->position->z = objects[0]->sommets[0]->position->z;
+                    copy_point((point_t){0,0,0}, objects[1]->sommets[i]->acceleration);
+                    copy_point((point_t){0,0,0}, objects[1]->sommets[i]->speed);
+                }
+            }
+        }
+
+
+
         SDL_RenderClear(renderer);
 
-        float periode = 5; // s
-        float amplitude = 0.03; // space unit
+        // float periode = 5; // s
+        // float amplitude = 0.03; // space unit
         // mouvement de la forme A*cos(wt) + x0
         // donc vitesse de la forme -A*w*sin(wt)
-        float omega = 2 * M_PI * 1/periode;
-        float speed_amplitude = -amplitude*omega;
-        float t = (float)time_next/1000; // temps courant en seconde
-        point_t suzanne_speed = {speed_amplitude * SDL_sinf(omega * t), 0, 0};
+        // float omega = 2 * M_PI * 1/periode;
+        // float speed_amplitude = -amplitude*omega;
+        // float t = (float)time_next/1000; // temps courant en seconde
+        // point_t suzanne_speed = {speed_amplitude * SDL_sinf(omega * t), 0, 0};
         // move_obj(objects[2], &suzanne_speed);
 
         sort(camera, triangles, nombre_triangle);
@@ -231,17 +296,17 @@ int main (void) {
                 objet_t* new_cube = copy_obj(cube);
 
                 point_t decalage = {0,0,0};
-                decalage.x = (camera->triangle_pointer->p1.x + camera->triangle_pointer->p2.x + camera->triangle_pointer->p3.x)/3;
-                decalage.y = (camera->triangle_pointer->p1.y + camera->triangle_pointer->p2.y + camera->triangle_pointer->p3.y)/3;
-                decalage.z = (camera->triangle_pointer->p1.z + camera->triangle_pointer->p2.z + camera->triangle_pointer->p3.z)/3;
-                point_t r3_non_normaliser = produit_vectoriel(soustraction_point(camera->triangle_pointer->p2, camera->triangle_pointer->p1), soustraction_point(camera->triangle_pointer->p3, camera->triangle_pointer->p1));
+                decalage.x = (camera->triangle_pointer->p1->x + camera->triangle_pointer->p2->x + camera->triangle_pointer->p3->x)/3;
+                decalage.y = (camera->triangle_pointer->p1->y + camera->triangle_pointer->p2->y + camera->triangle_pointer->p3->y)/3;
+                decalage.z = (camera->triangle_pointer->p1->z + camera->triangle_pointer->p2->z + camera->triangle_pointer->p3->z)/3;
+                point_t r3_non_normaliser = produit_vectoriel(soustraction_point(*camera->triangle_pointer->p2, *camera->triangle_pointer->p1), soustraction_point(*camera->triangle_pointer->p3, *camera->triangle_pointer->p1));
                 point_t r3 = produit_par_scalaire(1/norm(r3_non_normaliser), r3_non_normaliser);
-                point_t r2_non_normaliser = soustraction_point(camera->point->position, decalage);
+                point_t r2_non_normaliser = soustraction_point(*camera->point->position, decalage);
                 r2_non_normaliser = soustraction_point(r2_non_normaliser, produit_par_scalaire(r3.x*r2_non_normaliser.x + r3.y*r2_non_normaliser.y + r3.z*r2_non_normaliser.z, r3));
                 point_t r2 = produit_par_scalaire(1/norm(r2_non_normaliser), r2_non_normaliser);
                 point_t r1 = produit_vectoriel(r2, r3);
 
-                point_t position_decalage = soustraction_point(camera->point->position, decalage);
+                point_t position_decalage = soustraction_point(*camera->point->position, decalage);
                 if (r3.x*position_decalage.x + r3.y*position_decalage.y + r3.z*position_decalage.z < 0) {
                     r1 = produit_par_scalaire(-1, r1);
                     r3 = produit_par_scalaire(-1, r3);
@@ -251,26 +316,13 @@ int main (void) {
                 point_t r2_inv = {r2.z*r3.x-r2.x*r3.z, r1.x*r3.z-r1.z*r3.x, r1.z*r2.x-r1.x*r2.z};
                 point_t r3_inv = {r2.x*r3.y-r2.y*r3.x, r1.y*r3.x-r1.x*r3.y, r1.x*r2.y-r1.y*r2.x};
 
-                for (int i=0; i<new_cube->size; i++) {
-                    point_t p1 = {
-                        r1_inv.x*new_cube->triangles[i]->p1.x + r1_inv.y*new_cube->triangles[i]->p1.y + r1_inv.z*new_cube->triangles[i]->p1.z + decalage.x,
-                        r2_inv.x*new_cube->triangles[i]->p1.x + r2_inv.y*new_cube->triangles[i]->p1.y + r2_inv.z*new_cube->triangles[i]->p1.z + decalage.y,
-                        r3_inv.x*new_cube->triangles[i]->p1.x + r3_inv.y*new_cube->triangles[i]->p1.y + r3_inv.z*new_cube->triangles[i]->p1.z + decalage.z,
+                for (int i=0; i<new_cube->nb_sommets; i++) {
+                    point_t p = {
+                        r1_inv.x*new_cube->sommets[i]->position->x + r1_inv.y*new_cube->sommets[i]->position->y + r1_inv.z*new_cube->sommets[i]->position->z + decalage.x,
+                        r2_inv.x*new_cube->sommets[i]->position->x + r2_inv.y*new_cube->sommets[i]->position->y + r2_inv.z*new_cube->sommets[i]->position->z + decalage.y,
+                        r3_inv.x*new_cube->sommets[i]->position->x + r3_inv.y*new_cube->sommets[i]->position->y + r3_inv.z*new_cube->sommets[i]->position->z + decalage.z,
                     };
-                    point_t p2 = {
-                        r1_inv.x*new_cube->triangles[i]->p2.x + r1_inv.y*new_cube->triangles[i]->p2.y + r1_inv.z*new_cube->triangles[i]->p2.z + decalage.x,
-                        r2_inv.x*new_cube->triangles[i]->p2.x + r2_inv.y*new_cube->triangles[i]->p2.y + r2_inv.z*new_cube->triangles[i]->p2.z + decalage.y,
-                        r3_inv.x*new_cube->triangles[i]->p2.x + r3_inv.y*new_cube->triangles[i]->p2.y + r3_inv.z*new_cube->triangles[i]->p2.z + decalage.z,
-                    };
-                    point_t p3 = {
-                        r1_inv.x*new_cube->triangles[i]->p3.x + r1_inv.y*new_cube->triangles[i]->p3.y + r1_inv.z*new_cube->triangles[i]->p3.z + decalage.x,
-                        r2_inv.x*new_cube->triangles[i]->p3.x + r2_inv.y*new_cube->triangles[i]->p3.y + r2_inv.z*new_cube->triangles[i]->p3.z + decalage.y,
-                        r3_inv.x*new_cube->triangles[i]->p3.x + r3_inv.y*new_cube->triangles[i]->p3.y + r3_inv.z*new_cube->triangles[i]->p3.z + decalage.z,
-                    };
-
-                    new_cube->triangles[i]->p1 = p1;
-                    new_cube->triangles[i]->p2 = p2;
-                    new_cube->triangles[i]->p3 = p3;
+                    copy_point(p, new_cube->sommets[i]->position);
                 }
                 
                 point_t dec2 = produit_par_scalaire(0.5, r3);
@@ -280,12 +332,12 @@ int main (void) {
                 free(objects);
                 objects = nobjs;
                 nombre_triangle = 0;
-                for (int i=0; i<nb_obj; i++) nombre_triangle += objects[i]->size;
+                for (int i=0; i<nb_obj; i++) nombre_triangle += objects[i]->nb_triangles;
                 free(triangles);
                 triangles = malloc(sizeof(triangle_t*)*nombre_triangle);
                 int k = 0;
                 for (int i=0; i<nb_obj; i++) {
-                    for (int j=0; j<objects[i]->size; j++) {
+                    for (int j=0; j<objects[i]->nb_triangles; j++) {
                         triangles[k] = objects[i]->triangles[j];
                         k++;
                     }

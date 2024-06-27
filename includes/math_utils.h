@@ -11,7 +11,7 @@ typedef struct {
 } point_t;
 
 typedef struct {
-    point_t p1, p2, p3;
+    point_t *p1, *p2, *p3;
     SDL_Color color;
 } triangle_t;
 
@@ -26,5 +26,7 @@ point_t produit_par_scalaire(float x, point_t p);
 float distance(point_t point1, point_t point2);
 float norm(point_t vector);
 float abs_float(float a);
+point_t* malloc_point(point_t p);
+void copy_point(point_t src, point_t* dst);
 
 #endif

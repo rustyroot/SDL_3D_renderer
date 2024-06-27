@@ -3,7 +3,7 @@
 #include <SDL2/SDL_timer.h>
 #include <stdlib.h>
 
-camera_t* create_camera (point_t position, float keyboard_sensitivity, float mouse_sensitivity, float fov) {
+camera_t* create_camera (point_t* position, float keyboard_sensitivity, float mouse_sensitivity, float fov) {
     camera_t* camera = malloc(sizeof(camera_t));
     camera->point = create_physical_point(position, 0, 0);
     camera->yaw = 0; // rotation à l'horizon pour invariant <--> radian
@@ -16,7 +16,7 @@ camera_t* create_camera (point_t position, float keyboard_sensitivity, float mou
 }
 
 void destroy_camera(camera_t *camera) {
-    free(camera->point);
+    destroy_physical_point(camera->point);
     free(camera);
 }
 
@@ -32,7 +32,7 @@ SDL_bool get_angles (camera_t* C, point_t* O, float* theta, float* phi) {
     point_t CP_2 = {sin(-C->yaw) * cos(C->pitch), cos(C->pitch) * cos(C->yaw), sin(C->pitch)};
     point_t CP_3 = produit_vectoriel(CP_1, CP_2);
     
-    point_t CO = {O->x - C->point->position.x, O->y - C->point->position.y, O->z - C->point->position.z};
+    point_t CO = {O->x - C->point->position->x, O->y - C->point->position->y, O->z - C->point->position->z};
 
     point_t CO_base_camera = {
         CP_1.x*CO.x + CP_1.y*CO.y + CP_1.z*CO.z,
@@ -60,11 +60,11 @@ void draw_triangle(camera_t* camera, triangle_t* triangle, SDL_Color c1, SDL_Col
     float theta, phi;
     float x1, y1, x2, y2, x3, y3;
 
-    SDL_bool t1 = get_angles(camera, &triangle->p1, &theta, &phi);
+    SDL_bool t1 = get_angles(camera, triangle->p1, &theta, &phi);
     angles_to_screen_coordinates(theta, phi, camera->fov, window, &x1, &y1);
-    SDL_bool t2 = get_angles(camera, &triangle->p2, &theta, &phi);
+    SDL_bool t2 = get_angles(camera, triangle->p2, &theta, &phi);
     angles_to_screen_coordinates(theta, phi, camera->fov, window, &x2, &y2);
-    SDL_bool t3 = get_angles(camera, &triangle->p3, &theta, &phi);
+    SDL_bool t3 = get_angles(camera, triangle->p3, &theta, &phi);
     angles_to_screen_coordinates(theta, phi, camera->fov, window, &x3, &y3);
 
     rotate(&x1, &y1, camera->roll, window);
@@ -115,19 +115,19 @@ void sort(camera_t* camera, triangle_t** triangles, int size) {
 }
 
 float average_sqared_distance(triangle_t* t, camera_t* camera) {
-    float dx = t->p1.x - camera->point->position.x;
-    float dy = t->p1.y - camera->point->position.y;
-    float dz = t->p1.z - camera->point->position.z;
+    float dx = t->p1->x - camera->point->position->x;
+    float dy = t->p1->y - camera->point->position->y;
+    float dz = t->p1->z - camera->point->position->z;
     float dp1 = dx*dx + dy*dy + dz*dz;
 
-    dx = t->p2.x - camera->point->position.x;
-    dy = t->p2.y - camera->point->position.y;
-    dz = t->p2.z - camera->point->position.z;
+    dx = t->p2->x - camera->point->position->x;
+    dy = t->p2->y - camera->point->position->y;
+    dz = t->p2->z - camera->point->position->z;
     float dp2 = dx*dx + dy*dy + dz*dz;
 
-    dx = t->p3.x - camera->point->position.x;
-    dy = t->p3.y - camera->point->position.y;
-    dz = t->p3.z - camera->point->position.z;
+    dx = t->p3->x - camera->point->position->x;
+    dy = t->p3->y - camera->point->position->y;
+    dz = t->p3->z - camera->point->position->z;
     float dp3 = dx*dx + dy*dy + dz*dz;
     return (dp1+dp2+dp3)/3;
 }
@@ -136,27 +136,27 @@ void update_camera(camera_t* camera, list_t* keyDown, float* mouse_events) {
     while(keyDown != NULL) {
         switch (keyDown->val) {
             case SDLK_z :
-                camera->point->acceleration.x += camera->keyboard_sensitivity * sin(-camera->yaw) * cos(camera->pitch);
-                camera->point->acceleration.y += camera->keyboard_sensitivity * cos(camera->pitch) * cos(camera->yaw);
-                camera->point->acceleration.z += camera->keyboard_sensitivity * sin(camera->pitch);
+                camera->point->acceleration->x += camera->keyboard_sensitivity * sin(-camera->yaw) * cos(camera->pitch);
+                camera->point->acceleration->y += camera->keyboard_sensitivity * cos(camera->pitch) * cos(camera->yaw);
+                camera->point->acceleration->z += camera->keyboard_sensitivity * sin(camera->pitch);
                 break;
 
             case SDLK_q :
-                camera->point->acceleration.x += -camera->keyboard_sensitivity * cos(camera->yaw) * cos(camera->roll);
-                camera->point->acceleration.y += -camera->keyboard_sensitivity * sin(camera->yaw) * cos(camera->roll);
-                camera->point->acceleration.z += -camera->keyboard_sensitivity * sin(-camera->roll); 
+                camera->point->acceleration->x += -camera->keyboard_sensitivity * cos(camera->yaw) * cos(camera->roll);
+                camera->point->acceleration->y += -camera->keyboard_sensitivity * sin(camera->yaw) * cos(camera->roll);
+                camera->point->acceleration->z += -camera->keyboard_sensitivity * sin(-camera->roll); 
                 break;
 
             case SDLK_s :
-                camera->point->acceleration.x += -camera->keyboard_sensitivity * sin(-camera->yaw) * cos(camera->pitch);
-                camera->point->acceleration.y += -camera->keyboard_sensitivity * cos(camera->pitch) * cos(camera->yaw);
-                camera->point->acceleration.z += -camera->keyboard_sensitivity * sin(camera->pitch);
+                camera->point->acceleration->x += -camera->keyboard_sensitivity * sin(-camera->yaw) * cos(camera->pitch);
+                camera->point->acceleration->y += -camera->keyboard_sensitivity * cos(camera->pitch) * cos(camera->yaw);
+                camera->point->acceleration->z += -camera->keyboard_sensitivity * sin(camera->pitch);
                 break;
 
             case SDLK_d :
-                camera->point->acceleration.x += camera->keyboard_sensitivity * cos(camera->yaw) * cos(camera->roll);
-                camera->point->acceleration.y += camera->keyboard_sensitivity * sin(camera->yaw) * cos(camera->roll);
-                camera->point->acceleration.z += camera->keyboard_sensitivity * sin(-camera->roll); 
+                camera->point->acceleration->x += camera->keyboard_sensitivity * cos(camera->yaw) * cos(camera->roll);
+                camera->point->acceleration->y += camera->keyboard_sensitivity * sin(camera->yaw) * cos(camera->roll);
+                camera->point->acceleration->z += camera->keyboard_sensitivity * sin(-camera->roll); 
                 break;
 
             case SDLK_e :
@@ -168,35 +168,35 @@ void update_camera(camera_t* camera, list_t* keyDown, float* mouse_events) {
                 break;
 
             case SDLK_SPACE:
-                camera->point->acceleration.z += camera->keyboard_sensitivity;
+                camera->point->acceleration->z += camera->keyboard_sensitivity;
                 break;
 
             case SDLK_LSHIFT:
-                camera->point->acceleration.z -= camera->keyboard_sensitivity;
+                camera->point->acceleration->z -= camera->keyboard_sensitivity;
                 break;
             
             case SDLK_LEFT :
-                camera->point->position.x -= 0.3;
+                camera->point->position->x -= 0.3;
                 break;
 
             case SDLK_RIGHT :
-                camera->point->position.x += 0.3;
+                camera->point->position->x += 0.3;
                 break;
 
             case SDLK_DOWN :
-                camera->point->position.y -= 0.3;
+                camera->point->position->y -= 0.3;
                 break;
 
             case SDLK_UP :
-                camera->point->position.y += 0.3;
+                camera->point->position->y += 0.3;
                 break;
             
             case SDLK_PAGEUP :
-                camera->point->position.z += 0.3;
+                camera->point->position->z += 0.3;
                 break;
 
             case SDLK_PAGEDOWN :
-                camera->point->position.z -= 0.3;
+                camera->point->position->z -= 0.3;
                 break;
         }
         if (keyDown != NULL) keyDown = keyDown->next;
@@ -209,9 +209,9 @@ void update_camera(camera_t* camera, list_t* keyDown, float* mouse_events) {
 
     float time_elapsed = (float)(t - camera->point->time)/1000;
 
-    camera->point->position = somme_point(camera->point->position, produit_par_scalaire(time_elapsed, camera->point->speed));
-    camera->point->speed = produit_par_scalaire(0.99, somme_point(camera->point->speed, produit_par_scalaire(time_elapsed, camera->point->acceleration)));
-    camera->point->acceleration = produit_par_scalaire(0, camera->point->acceleration);
+    copy_point(somme_point(*camera->point->position, produit_par_scalaire(time_elapsed, *camera->point->speed)), camera->point->position);
+    copy_point(produit_par_scalaire(0.99, somme_point(*camera->point->speed, produit_par_scalaire(time_elapsed, *camera->point->acceleration))), camera->point->speed);
+    copy_point(produit_par_scalaire(0, *camera->point->acceleration), camera->point->acceleration);
 
     camera->point->time = t;
 }
