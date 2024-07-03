@@ -3,6 +3,7 @@
 
 #include "math_utils.h"
 #include <SDL2/SDL.h>
+#include <pthread.h>
 
 typedef struct {
     point_t *position;
@@ -12,6 +13,7 @@ typedef struct {
     float charge;
     float mass;
     SDL_bool fixe;
+    pthread_mutex_t mutex;
 } physical_point_t;
 
 typedef struct {
@@ -25,6 +27,7 @@ physical_point_t* create_physical_point (point_t *position, float charge, float 
 void destroy_physical_point (physical_point_t* point);
 void update_physical_point (physical_point_t* point, point_t* forces, int nb_forces);
 point_t gravitational_force (physical_point_t point1, physical_point_t point2);
+void *force_ressort(void* argv);
 
 
 #endif

@@ -1,6 +1,9 @@
+
 #include "../includes/physic.h"
+#include "../includes/object.h"
 #include <SDL2/SDL_stdinc.h>
 #include <SDL2/SDL_timer.h>
+#include <pthread.h>
 
 const float gravitational_constant = 6.67430 * 0.000000000001;
 
@@ -13,6 +16,7 @@ physical_point_t* create_physical_point (point_t *position, float charge, float 
     point->mass = mass;
     point->time = SDL_GetTicks64();
     point->fixe = SDL_FALSE;
+    pthread_mutex_init(&point->mutex, NULL);
     return point;
 }
 
@@ -49,4 +53,34 @@ point_t gravitational_force (physical_point_t point1, physical_point_t point2) {
         vector12.z * force_norm / norm_vector12
     };
     return force;
+}
+
+void *force_ressort(void* argv) {
+    objet_t* obj = *((objet_t**) argv);
+    int debut = *((int*) (argv+sizeof(objet_t**)));
+    int fin = *((int*) (argv+sizeof(objet_t**)+sizeof(int*)));
+    // force des ressorts
+    for (int i=debut; i<fin; i++) {
+        if (i >= obj->nb_springs) break;
+
+        pthread_mutex_lock(&obj->springs[i]->p1->mutex);
+        pthread_mutex_lock(&obj->springs[i]->p2->mutex);
+
+        float max_delta_l = 1;
+        float delta_l = distance(*obj->springs[i]->p1->position, *obj->springs[i]->p2->position) - obj->springs[i]->size;
+        delta_l = (delta_l>max_delta_l)?max_delta_l:delta_l;
+        point_t dir = soustraction_point(*obj->springs[i]->p2->position, *obj->springs[i]->p1->position);
+        // printf("init : %f\n", abs_float(norm(dir)));
+        if (abs_float(norm(dir)) > 0.1) {
+            dir = produit_par_scalaire(delta_l*obj->springs[i]->k/norm(dir), dir);
+            // printf("nd : %f\n", norm(dir));
+            copy_point(somme_point(*obj->springs[i]->p1->acceleration, dir), obj->springs[i]->p1->acceleration);
+            copy_point(soustraction_point(*obj->springs[i]->p2->acceleration, dir), obj->springs[i]->p2->acceleration);
+        }
+
+        pthread_mutex_unlock(&obj->springs[i]->p1->mutex);
+        pthread_mutex_unlock(&obj->springs[i]->p2->mutex);
+    }
+
+    pthread_exit(NULL);
 }

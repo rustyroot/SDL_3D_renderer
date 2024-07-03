@@ -10,7 +10,9 @@
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_video.h>
 #include <SDL2/SDL_ttf.h>
+#include <pthread.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "../includes/camera.h"
 #include "../includes/math_utils.h"
@@ -41,7 +43,7 @@ int main (void) {
     SDL_SetRelativeMouseMode(SDL_TRUE);
 
     float camera_keyboard_sensitivity = 100;
-    float camera_mouse_sensitivity = to_radians(780.0/60);
+    float camera_mouse_sensitivity = to_radians(15);
     camera_t* camera = create_camera(malloc_point((point_t){0, -10, 0}), camera_keyboard_sensitivity, camera_mouse_sensitivity, fov);
 
     // point_t points[12] = {
@@ -202,17 +204,24 @@ int main (void) {
             }
 
             // force des ressorts
-            for (int i=0; i<objects[1]->nb_springs; i++) {
-                float delta_l = distance(*objects[1]->springs[i]->p1->position, *objects[1]->springs[i]->p2->position) - objects[1]->springs[i]->size;
-                delta_l = (delta_l>1)?1:delta_l;
-                point_t dir = soustraction_point(*objects[1]->springs[i]->p2->position, *objects[1]->springs[i]->p1->position);
-                // printf("init : %f\n", abs_float(norm(dir)));
-                if (abs_float(norm(dir)) > 0.1) {
-                    dir = produit_par_scalaire(delta_l*objects[1]->springs[i]->k/norm(dir), dir);
-                    // printf("nd : %f\n", norm(dir));
-                    copy_point(somme_point(*objects[1]->springs[i]->p1->acceleration, dir), objects[1]->springs[i]->p1->acceleration);
-                    copy_point(soustraction_point(*objects[1]->springs[i]->p2->acceleration, dir), objects[1]->springs[i]->p2->acceleration);
+            pthread_t threads[20];
+            void* arg[20];
+            int nb_threads = 20;
+            int size = objects[1]->nb_springs/nb_threads;
+            for (int i=0; i<nb_threads; i++) {
+                arg[i] = malloc(sizeof(objet_t**)+2*sizeof(int*));
+                *((objet_t**) arg[i]) = objects[1];
+                *((int*) (arg[i]+sizeof(objet_t**))) = i*size;
+                *((int*) (arg[i]+sizeof(objet_t**)+sizeof(int*))) = (i!=nb_threads)?(i+1)*size:objects[1]->nb_springs;
+                int rc = pthread_create(&threads[i], NULL, force_ressort, arg[i]);
+                if (rc){
+                    printf("ERROR; return code from pthread_create() is %d\n", rc);
+                    exit(-1);
                 }
+            }
+            for (int i=0; i<nb_threads; i++) {
+                pthread_join(threads[i], NULL);
+                free(arg[i]);
             }
 
             if (!simul2) {
@@ -232,6 +241,11 @@ int main (void) {
                 copy_point(somme_point(produit_par_scalaire(coefficient_frottement, *objects[1]->sommets[i]->speed), *objects[1]->sommets[i]->acceleration), objects[1]->sommets[i]->acceleration);
 
                 copy_point(somme_point(*objects[1]->sommets[i]->speed, produit_par_scalaire(time_since_last_update, *objects[1]->sommets[i]->acceleration)), objects[1]->sommets[i]->speed);
+
+                float max_speed = 2;
+                float norm_speed = norm(*objects[1]->sommets[i]->speed);
+                if (norm_speed > max_speed) copy_point(produit_par_scalaire(max_speed/norm_speed, *objects[1]->sommets[i]->speed), objects[1]->sommets[i]->speed);
+
                 copy_point(somme_point(*objects[1]->sommets[i]->position, produit_par_scalaire(time_since_last_update, *objects[1]->sommets[i]->speed)), objects[1]->sommets[i]->position);
             }
 
