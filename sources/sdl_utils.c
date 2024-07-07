@@ -1,7 +1,7 @@
 #include "../includes/sdl_utils.h"
 #include <SDL2/SDL_events.h>
 
-void poll_event (SDL_Event* event, list_t** keyDown, SDL_bool* is_running_ptr, float* mouse_events) {
+void poll_event (SDL_Event* event, int_list_t** keyDown, SDL_bool* is_running_ptr, float* mouse_events) {
     while (SDL_PollEvent(event)) {
             switch (event->type) {
                 case SDL_KEYDOWN:
@@ -10,12 +10,12 @@ void poll_event (SDL_Event* event, list_t** keyDown, SDL_bool* is_running_ptr, f
                             *is_running_ptr = SDL_FALSE;
                             break;
                         default:
-                            if (!list_mem(*keyDown, event->key.keysym.sym)) *keyDown = add_list(*keyDown, event->key.keysym.sym);
+                            if (!int_list_mem(*keyDown, event->key.keysym.sym)) *keyDown = add_int_list(*keyDown, event->key.keysym.sym);
                             break;
                     }
                     break;
                 case SDL_KEYUP:
-                    *keyDown = remove_list(*keyDown, event->key.keysym.sym);
+                    *keyDown = remove_int_list(*keyDown, event->key.keysym.sym);
                     break;
 
                 case SDL_MOUSEWHEEL:

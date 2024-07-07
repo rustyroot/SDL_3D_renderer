@@ -132,7 +132,7 @@ float average_sqared_distance(triangle_t* t, camera_t* camera) {
     return (dp1+dp2+dp3)/3;
 }
 
-void update_camera(camera_t* camera, list_t* keyDown, float* mouse_events) {
+void update_camera(camera_t* camera, int_list_t* keyDown, float* mouse_events) {
     while(keyDown != NULL) {
         switch (keyDown->val) {
             case SDLK_z :

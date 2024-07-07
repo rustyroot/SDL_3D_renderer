@@ -4,6 +4,6 @@
 #include "SDL2/SDL.h"
 #include "list.h"
 
-void poll_event (SDL_Event* event, list_t** keyDown, SDL_bool* is_running_ptr, float* mouse_events);
+void poll_event (SDL_Event* event, int_list_t** keyDown, SDL_bool* is_running_ptr, float* mouse_events);
 
 #endif

@@ -26,7 +26,10 @@ point_t produit_par_scalaire(float x, point_t p);
 float distance(point_t point1, point_t point2);
 float norm(point_t vector);
 float abs_float(float a);
+float min_float(float a, float b);
+float max_float(float a, float b);
 point_t* malloc_point(point_t p);
 void copy_point(point_t src, point_t* dst);
+float distance_triangle_point(triangle_t triangle, point_t point);
 
 #endif

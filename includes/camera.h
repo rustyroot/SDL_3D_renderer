@@ -27,6 +27,6 @@ void rotate(float* x1, float* y1, float angle, SDL_Window* window);
 void draw_triangle(camera_t* camera, triangle_t* triangle, SDL_Color c1, SDL_Color c2, SDL_Color c3, SDL_Window* window, SDL_Renderer* renderer);
 void sort(camera_t* camera, triangle_t** triangles, int size);
 float average_sqared_distance(triangle_t* t, camera_t* camera);
-void update_camera(camera_t* camera, list_t* keyDown, float* mouse_events);
+void update_camera(camera_t* camera, int_list_t* keyDown, float* mouse_events);
 
 #endif

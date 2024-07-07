@@ -151,6 +151,18 @@ int main (void) {
     }
 
     objet_t* cube = load_obj_file("objects/cube.obj");
+    scale = 1;//20;
+    point_t cr1 = {scale, 0, 0};
+    point_t cr2 = {0, scale, 0};
+    point_t cr3 = {0, 0, scale};
+    for (int i=0; i<cube->nb_sommets; i++) {
+        point_t p = {
+            cr1.x*cube->sommets[i]->position->x + cr1.y*cube->sommets[i]->position->y + cr1.z*cube->sommets[i]->position->z,
+            cr2.x*cube->sommets[i]->position->x + cr2.y*cube->sommets[i]->position->y + cr2.z*cube->sommets[i]->position->z,
+            cr3.x*cube->sommets[i]->position->x + cr3.y*cube->sommets[i]->position->y + cr3.z*cube->sommets[i]->position->z,
+        };
+        copy_point(p, cube->sommets[i]->position);
+    }
 
     TTF_Init();
     TTF_Font* liberation = TTF_OpenFont("fonts/liberation-fonts-ttf-2.1.5/LiberationSerif-Regular.ttf", 24);
@@ -167,7 +179,7 @@ int main (void) {
     int index_frame = 0;
     time_prev = SDL_GetTicks64();
 
-    list_t* keyDown = NULL;
+    int_list_t* keyDown = NULL;
 
     SDL_bool simul = SDL_FALSE;
     SDL_bool simul2 = SDL_FALSE;
@@ -190,12 +202,27 @@ int main (void) {
         poll_event(&event, &keyDown, &is_running, mouse_events);
         update_camera(camera, keyDown, mouse_events);
 
+        // for (int i=0; i<objects[1]->nb_triangles; i++) {
+        //     objects[1]->triangles[i]->color = cyan;
+        // }
+        // for (int i=0; i<objects[1]->nb_sommets; i++) {
+        //     for (int j=1; j<nb_obj; j++) {
+        //         if (j!=1 && collision_sommet_objet(objects[1]->sommets[i]->position, objects[j])) {
+        //             list_t* l = objects[1]->sommets_triangles[i];
+        //             while (l != NULL) {
+        //                 ((triangle_t*) l->val)->color = white;
+        //                 l = l->next;
+        //             }
+        //         }
+        //     }
+        // }
 
-
-        if (list_mem(keyDown, SDLK_g)) {
-                keyDown = remove_list(keyDown, SDLK_g);
-                if (simul) simul = SDL_FALSE;
-                else simul = SDL_TRUE;
+        if (int_list_mem(keyDown, SDLK_g)) {
+                keyDown = remove_int_list(keyDown, SDLK_g);
+                if (simul) {
+                    simul = SDL_FALSE;
+                    simul2 = SDL_FALSE;
+                } else simul = SDL_TRUE;
         }
         if (simul) {
             // force de graviter
@@ -257,6 +284,9 @@ int main (void) {
                     copy_point((point_t){0,0,0}, objects[1]->sommets[i]->speed);
                 }
             }
+
+            // collision avec autre objet
+            collision(objects[1], objects, nb_obj);
         }
 
 
@@ -313,8 +343,8 @@ int main (void) {
         // Quand touche p enfoncée ajoute un cube
         if (camera->triangle_pointer != NULL) {
             // draw_triangle(camera, camera->triangle_pointer, white, white, white, window, renderer);
-            if (list_mem(keyDown, SDLK_p)) {
-                keyDown = remove_list(keyDown, SDLK_p);
+            if (int_list_mem(keyDown, SDLK_p)) {
+                keyDown = remove_int_list(keyDown, SDLK_p);
                 nb_obj++;
                 objet_t** nobjs = (objet_t**) malloc(sizeof(objet_t*)*nb_obj);
                 for (int i=0; i<nb_obj-1; i++) {
