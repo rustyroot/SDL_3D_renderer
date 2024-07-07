@@ -20,6 +20,21 @@
 #include "../includes/list.h"
 #include "../includes/sdl_utils.h"
 
+const char* help_message = 
+    "\
+    g -> activer / désactiver la physique\n\
+    p -> ajouter un cube\n\
+    z -> avancer\n\
+    s -> reculer\n\
+    q -> aller à gauche\n\
+    d -> aller à droite\n\
+    space -> monter\n\
+    left shift -> descendre\n\
+    e -> rotation de la caméra vers la gauche\n\
+    r -> rotation de la caméra vers la droite\n\
+    h -> activer / désactiver le message d'aide\
+    ";
+
 int main (void) {
 
     SDL_Init(SDL_INIT_EVERYTHING);
@@ -172,6 +187,16 @@ int main (void) {
     SDL_bool simul = SDL_FALSE;
     SDL_bool simul2 = SDL_FALSE;
 
+    SDL_bool show_help_message = SDL_TRUE;
+    int nb_helpSurface = 0;
+    SDL_Surface** surfaceHelpMessage = create_surfaces_from_text(liberation, help_message, white, &nb_helpSurface);
+    SDL_Texture** textureHelpMessage = (SDL_Texture**) malloc(sizeof(SDL_Texture*)*nb_helpSurface);
+    for (int i=0; i<nb_helpSurface; i++) {
+        textureHelpMessage[i] = SDL_CreateTextureFromSurface(renderer, surfaceHelpMessage[i]);
+    }
+    SDL_Rect* help_message_rect = create_rect_from_text(liberation, help_message, nb_helpSurface);
+
+
     while (is_running) {
 
         time_next = SDL_GetTicks64();
@@ -194,8 +219,10 @@ int main (void) {
 
         if (list_mem(keyDown, SDLK_g)) {
                 keyDown = remove_list(keyDown, SDLK_g);
-                if (simul) simul = SDL_FALSE;
-                else simul = SDL_TRUE;
+                if (simul) {
+                    simul = SDL_FALSE;
+                    simul2 = SDL_FALSE;
+                } else simul = SDL_TRUE;
         }
         if (simul) {
             // force de graviter
@@ -373,8 +400,18 @@ int main (void) {
             }
         }
 
+        if (list_mem(keyDown, SDLK_h)) {
+            keyDown = remove_list(keyDown, SDLK_h);
+            show_help_message = !show_help_message;
+        }
+
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderCopy(renderer, Message, NULL, &Message_rect);
+        if (show_help_message) {
+            for (int i=0; i<nb_helpSurface; i++) {
+                SDL_RenderCopy(renderer, textureHelpMessage[i], NULL, &help_message_rect[i]);
+            }
+        }
         SDL_RenderPresent(renderer);
         SDL_FreeSurface(surfaceMessage);
         SDL_DestroyTexture(Message);
@@ -382,6 +419,14 @@ int main (void) {
     }
 
     free(timetext);
+
+    for (int i=0; i<nb_helpSurface; i++) {
+        SDL_FreeSurface(surfaceHelpMessage[i]);
+        SDL_DestroyTexture(textureHelpMessage[i]);
+    }
+    free(surfaceHelpMessage);
+    free(help_message_rect);
+    free(textureHelpMessage);
 
     free(time_elapsed);
     free(triangles);

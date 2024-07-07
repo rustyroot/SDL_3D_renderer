@@ -133,6 +133,9 @@ float average_sqared_distance(triangle_t* t, camera_t* camera) {
 }
 
 void update_camera(camera_t* camera, list_t* keyDown, float* mouse_events) {
+    Uint64 t = SDL_GetTicks64();
+    float time_elapsed = (float)(t - camera->point->time)/1000;
+
     while(keyDown != NULL) {
         switch (keyDown->val) {
             case SDLK_z :
@@ -160,11 +163,11 @@ void update_camera(camera_t* camera, list_t* keyDown, float* mouse_events) {
                 break;
 
             case SDLK_e :
-                camera->roll -= camera->mouse_sensitivity;
+                camera->roll -= camera->keyboard_sensitivity * 0.01 * time_elapsed;
                 break;
 
             case SDLK_r :
-                camera->roll += camera->mouse_sensitivity;
+                camera->roll += camera->keyboard_sensitivity * 0.01 * time_elapsed;
                 break;
 
             case SDLK_SPACE:
@@ -201,10 +204,6 @@ void update_camera(camera_t* camera, list_t* keyDown, float* mouse_events) {
         }
         if (keyDown != NULL) keyDown = keyDown->next;
     }
-
-    Uint64 t = SDL_GetTicks64();
-
-    float time_elapsed = (float)(t - camera->point->time)/1000;
 
     camera->roll -= camera->mouse_sensitivity * mouse_events[0] * 3 * time_elapsed;
     camera->yaw -= camera->mouse_sensitivity * (mouse_events[1] * cos(camera->roll) - mouse_events[2] * sin(camera->roll)) * time_elapsed;
