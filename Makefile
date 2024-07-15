@@ -1,7 +1,6 @@
 FLAGS = -Wall -Wextra -fsanitize=address,undefined -g
-MATHLIB = -lm
-SDLLIB = -lSDL2
-TTFLIB = -lSDL2_ttf
+#FLAGS = -g
+LIBS = -lm -lSDL2 -lSDL2_ttf
 
 SOURCE_DIR = sources
 OBJ_DIR = build/obj
@@ -10,11 +9,11 @@ OBJ = $(SRC:$(SOURCE_DIR)/%.c=$(OBJ_DIR)/%.o)
 
 main.exe : $(OBJ)
 	mkdir -p build
-	gcc $(FLAGS) $(MATHLIB) $(SDLLIB) $(TTFLIB) -o ./build/main.exe $^
+	gcc $(FLAGS) -o ./build/main.exe $^ $(LIBS)
 
 $(OBJ_DIR)/%.o : $(SOURCE_DIR)/%.c
 	mkdir -p $(OBJ_DIR)
-	gcc $(FLAGS) $(MATHLIB) $(SDLLIB) -c -o $@ $<
+	gcc $(FLAGS) -c -o $@ $< $(LIBS)
 
 clean : 
 	rm -rfv ./build
