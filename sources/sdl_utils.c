@@ -1,9 +1,9 @@
-#include "../includes/sdl_utils.h"
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_pixels.h>
 #include <SDL2/SDL_surface.h>
 #include <SDL2/SDL_ttf.h>
 #include <string.h>
+#include "sdl_utils.h"
 
 void poll_event (SDL_Event* event, list_t** keyDown, SDL_bool* is_running_ptr, float* mouse_events) {
     while (SDL_PollEvent(event)) {

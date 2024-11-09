@@ -1,7 +1,7 @@
 
-#include "../includes/object.h"
-#include "../includes/math_utils.h"
 #include <stdlib.h>
+#include "object.h"
+#include "math_utils.h"
 
 objet_t* load_obj_file(char* filename) {
     FILE* file = fopen(filename, "r");

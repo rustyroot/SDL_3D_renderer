@@ -1,9 +1,9 @@
 
-#include "../includes/physic.h"
-#include "../includes/object.h"
 #include <SDL2/SDL_stdinc.h>
 #include <SDL2/SDL_timer.h>
 #include <pthread.h>
+#include "physic.h"
+#include "object.h"
 
 const float gravitational_constant = 6.67430 * 0.000000000001;
 

@@ -13,10 +13,14 @@ main.exe : $(OBJ)
 
 $(OBJ_DIR)/%.o : $(SOURCE_DIR)/%.c
 	mkdir -p $(OBJ_DIR)
-	gcc $(FLAGS) -c -o $@ $< $(LIBS)
+	gcc -c -o $@ $< $(LIBS)
 
-clean : 
+clean :
 	rm -rfv ./build
 
 run :
 	./build/main.exe
+
+fast : $(OBJ)
+	mkdir -p build
+	gcc -o ./build/main.exe $^ $(LIBS)

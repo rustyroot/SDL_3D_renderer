@@ -1,6 +1,6 @@
 
-#include "../includes/math_utils.h"
 #include <SDL2/SDL_stdinc.h>
+#include "math_utils.h"
 
 double to_degrees(double radians) {
     return radians * (180.0 / M_PI);

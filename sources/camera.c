@@ -1,7 +1,7 @@
-#include "../includes/camera.h"
 #include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_timer.h>
 #include <stdlib.h>
+#include "camera.h"
 
 camera_t* create_camera (point_t* position, float keyboard_sensitivity, float mouse_sensitivity, float fov) {
     camera_t* camera = malloc(sizeof(camera_t));

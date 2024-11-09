@@ -14,11 +14,11 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "../includes/camera.h"
-#include "../includes/math_utils.h"
-#include "../includes/object.h"
-#include "../includes/list.h"
-#include "../includes/sdl_utils.h"
+#include "camera.h"
+#include "math_utils.h"
+#include "object.h"
+#include "list.h"
+#include "sdl_utils.h"
 
 const char* help_message = 
     "\
@@ -45,11 +45,11 @@ int main (void) {
     SDL_GetCurrentDisplayMode(0, &mode);
     int screen_width = mode.w;
     int screen_height = mode.h;
-    float ratio = 0.7;
+    float ratio = 1;
     float fov = to_radians(60);
 
     SDL_CreateWindowAndRenderer((int)(ratio * screen_width), (int)(ratio * screen_height), SDL_WINDOW_SHOWN, &window, &renderer);
-    SDL_SetWindowPosition(window, (screen_width - (int)(ratio * screen_width))/2, (screen_height - (int)(ratio * screen_height))/2);
+    //SDL_SetWindowPosition(window, (screen_width - (int)(ratio * screen_width))/2, (screen_height - (int)(ratio * screen_height))/2);
     SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
 
     SDL_bool is_running = SDL_TRUE;
