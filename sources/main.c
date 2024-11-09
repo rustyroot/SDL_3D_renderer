@@ -32,7 +32,8 @@ const char* help_message =
     left shift -> descendre\n\
     e -> rotation de la caméra vers la gauche\n\
     r -> rotation de la caméra vers la droite\n\
-    h -> activer / désactiver le message d'aide\
+    h -> activer / désactiver le message d'aide\n\
+    escape -> quiter\
     ";
 
 int main (void) {
